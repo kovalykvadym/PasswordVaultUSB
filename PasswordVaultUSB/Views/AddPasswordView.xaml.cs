@@ -19,9 +19,27 @@ namespace PasswordVaultUSB.Views
     /// </summary>
     public partial class AddPasswordView : Window
     {
+        public string Service { get; private set; }
+        public string Login { get; private set; }
+        public string Password { get; private set; }
         public AddPasswordView()
         {
             InitializeComponent();
+        }
+
+        private void AddButton_Click(object sender, RoutedEventArgs e)
+        {
+            if(string.IsNullOrEmpty(ServiceInput.Text) || string.IsNullOrEmpty(LoginInput.Text) || string.IsNullOrEmpty(PasswordInput.Password))
+            {
+                MessageBox.Show("Fill in all fiels.");
+                return;
+            }
+
+            Service = ServiceInput.Text;
+            Login = LoginInput.Text;
+            Password = PasswordInput.Password;
+
+            DialogResult = true;
         }
     }
 }

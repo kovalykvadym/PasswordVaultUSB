@@ -23,5 +23,19 @@ namespace PasswordVaultUSB.Views
         {
             InitializeComponent();
         }
+
+        private void AddPassword_Click(object sender, RoutedEventArgs e)
+        {
+            var addWindow = new AddPasswordView();
+
+            if (addWindow.ShowDialog() == true)
+            {
+                string service = addWindow.Service;
+                string login = addWindow.Login;
+                string password = addWindow.Password;
+
+                MessageBox.Show($"Added password: \nService: {service}\nLogin: {login}");
+            }
+        }
     }
 }

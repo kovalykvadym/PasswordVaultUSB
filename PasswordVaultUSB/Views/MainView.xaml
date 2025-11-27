@@ -5,8 +5,53 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PasswordVaultUSB.Views"
         mc:Ignorable="d"
-        Title="MainView" Height="450" Width="800">
+        Title="MainView" 
+        Height="450" 
+        MinHeight="250"
+        Width="800" 
+        MinWidth="600"
+        WindowStartupLocation="CenterScreen"
+        >
     <Grid>
-        
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0" Background="#2D2D30">
+            <TextBlock Text="Menu" 
+                       FontSize="20" 
+                       Foreground="White" 
+                       Margin="0,10,0,30"
+                       HorizontalAlignment="Center"
+                       />
+            
+            <Button Content="Add password" 
+                    Margin="5,0,5,10"
+                    Padding="5"
+                    Click="AddPassword_Click"
+                    />
+            
+            <Button Content="USB Status" 
+                    Margin="5,0,5,10"
+                    Padding="5"
+                    />
+            
+            <Button Content="Settings" 
+                    Margin="5,0,5,10"
+                    Padding="5"
+                    />
+
+        </StackPanel>
+
+        <Grid Grid.Column="1" Margin="20">
+            <TextBlock Text="Your passwords will apperar here" 
+                       FontSize="18" 
+                       VerticalAlignment="Top" 
+                       />
+            
+        </Grid>
+
     </Grid>
 </Window>
