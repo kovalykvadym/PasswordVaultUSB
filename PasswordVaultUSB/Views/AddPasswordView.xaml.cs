@@ -14,14 +14,13 @@ using System.Windows.Shapes;
 
 namespace PasswordVaultUSB.Views
 {
-    /// <summary>
-    /// Interaction logic for AddPasswordView.xaml
-    /// </summary>
     public partial class AddPasswordView : Window
     {
         public string Service { get; private set; }
         public string Login { get; private set; }
         public string Password { get; private set; }
+        public string Url { get; private set; }
+        public string Notes { get; private set; }
         public AddPasswordView()
         {
             InitializeComponent();

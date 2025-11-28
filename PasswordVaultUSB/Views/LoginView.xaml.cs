@@ -32,17 +32,25 @@ namespace PasswordVaultUSB.Views
 
         private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
-            var password = PasswordInput.Password;
-            if(password != "1234")
+            StatusText.Text = "";
+            string password = PasswordInput.Password;
+
+            if (string.IsNullOrEmpty(password))
             {
-                MessageBox.Show("Wrong password");
+                StatusText.Text = "Please enter your password!";
                 return;
             }
+
+            if(password != "1234")
+            {
+                StatusText.Text = "Incorrect password. Please try again.";
+                return;
+            }
+
             var mainView = new MainView();
             mainView.Show();
             Application.Current.MainWindow = mainView;
             this.Close();
-
         }
 
         private void TogglePasswordButton_Click(object sender, RoutedEventArgs e)
@@ -81,7 +89,5 @@ namespace PasswordVaultUSB.Views
                 PasswordInput.Password = PasswordVisible.Text;
             }
         }
-
-        
     }
 }
