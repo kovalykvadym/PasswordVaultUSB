@@ -36,5 +36,28 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
+    <Style x:Name="LabelStyle" TargetType="TextBlock">
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Margin" Value="0,0,0,5"/>
+        <Setter Property="FontSize" Value="14"/>
+    </Style>
+
+    <Style x:Key="InputBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="BorderBrush" Value="{StaticResource InputBorderColor}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="5"/>
+        <Setter Property="Padding" Value="5"/>
+        <Setter Property="Margin" Value="0,0,0,2"/>
+    </Style>
+
+    <Style x:Key="ErrorTextStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource ErrorColor}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Margin" Value="2,0,0,10"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="Visibility" Value="Collapsed"/>
+    </Style>
+
 </ResourceDictionary>

@@ -7,6 +7,9 @@
     
     <SolidColorBrush x:Key="TextPrimatyColor" Color="#333333"/>
     <SolidColorBrush x:Key="TextSecondaryColor" Color="#777777"/>
+    <SolidColorBrush x:Key="LabelTextColor" Color="#555555"/>
+    
     <SolidColorBrush x:Key="ErrorColor" Color="#D8000C"/>
+    <SolidColorBrush x:Key="InputBorderColor" Color="#CCCCCC"/>
     
 </ResourceDictionary>
