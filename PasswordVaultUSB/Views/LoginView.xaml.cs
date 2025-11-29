@@ -59,8 +59,8 @@ namespace PasswordVaultUSB.Views
             if (_isPasswordVisible)
             {
                 PasswordVisible.Text = PasswordInput.Password;
-                PasswordInput.Visibility = Visibility.Collapsed;
                 PasswordVisible.Visibility = Visibility.Visible;
+                PasswordInput.Visibility = Visibility.Collapsed;
 
                 EyeIcon.Source = new BitmapImage(new Uri("/Resources/visibility_off.png", UriKind.Relative));
             }

@@ -37,7 +37,7 @@
         </Setter>
     </Style>
 
-    <Style x:Name="LabelStyle" TargetType="TextBlock">
+    <Style x:Key="LabelStyle" TargetType="TextBlock">
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Margin" Value="0,0,0,5"/>
         <Setter Property="FontSize" Value="14"/>
