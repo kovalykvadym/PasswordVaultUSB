@@ -1,5 +1,7 @@
-﻿using System;
+﻿using PasswordVaultUSB.Models;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,14 +16,32 @@ using System.Windows.Shapes;
 
 namespace PasswordVaultUSB.Views
 {
-    /// <summary>
-    /// Interaction logic for MainView.xaml
-    /// </summary>
     public partial class MainView : Window
     {
+        public ObservableCollection<PasswordRecord> Passwords { get; set; }
         public MainView()
         {
             InitializeComponent();
+
+            Passwords = new ObservableCollection<PasswordRecord>();
+
+            Passwords.Add(new PasswordRecord {
+                Service = "Google",
+                Login = "my.email@gmail.com",
+                Password = "secretPassword123",
+                Url = "google.com"
+            });
+
+            Passwords.Add(new PasswordRecord
+            {
+                Service = "Facebook",
+                Login = "mark.zuck",
+                Password = "qwerty",
+                Url = "fb.com"
+            });
+
+            PasswordsGrid.ItemsSource = Passwords;
+
         }
 
         private void AddPassword_Click(object sender, RoutedEventArgs e)
@@ -30,12 +50,36 @@ namespace PasswordVaultUSB.Views
 
             if (addWindow.ShowDialog() == true)
             {
-                string service = addWindow.Service;
-                string login = addWindow.Login;
-                string password = addWindow.Password;
+                var newEntry = new PasswordRecord
+                {
+                    Service = addWindow.Service,
+                    Login = addWindow.Login,
+                    Password = addWindow.Password,
+                    Url = addWindow.Url,
+                    Notes = addWindow.Notes
+                };
 
-                MessageBox.Show($"Added password: \nService: {service}\nLogin: {login}");
+                Passwords.Add(newEntry);
             }
+        }
+
+        private void CopyPassword_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var entry = button.DataContext as PasswordRecord;
+
+            if (entry != null)
+            {
+                Clipboard.SetText(entry.Password);
+                MessageBox.Show($"Password for {entry.Service} copied to clipboard", "Copied", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private void LockVault_Click(object sender, RoutedEventArgs e)
+        {
+            var loginView = new LoginView();
+            loginView.Show();
+            this.Close();
         }
     }
 }

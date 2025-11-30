@@ -1,57 +1,192 @@
-﻿<Window x:Class="PasswordVaultUSB.Views.MainView"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:PasswordVaultUSB.Views"
-        mc:Ignorable="d"
-        Title="MainView" 
-        Height="450" 
-        MinHeight="250"
-        Width="800" 
-        MinWidth="600"
-        WindowStartupLocation="CenterScreen"
-        Style="{StaticResource WindowStyle}">
-    <Grid>
-
+﻿<Window
+    x:Class="PasswordVaultUSB.Views.MainView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:PasswordVaultUSB.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="MainView"
+    Width="900"
+    Height="600"
+    MinWidth="700"
+    MinHeight="450"
+    Style="{StaticResource WindowStyle}"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <Grid Background="#F0F2F5">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="220" />
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Column="0" Background="#2D2D30">
-            <TextBlock Text="Menu" 
-                       FontSize="20" 
-                       Foreground="White" 
-                       Margin="0,10,0,30"
-                       HorizontalAlignment="Center"
-                       />
-            
-            <Button Content="Add password" 
-                    Margin="5,0,5,10"
-                    Padding="5"
+        <Border Grid.Column="0" Background="#2D2D30">
+            <StackPanel>
+                <TextBlock
+                    Margin="20,30,0,40"
+                    FontFamily="Segoe UI"
+                    FontSize="28"
+                    FontWeight="Bold"
+                    Foreground="White"
+                    Text="PVault" />
+
+                <Button
+                    Height="40"
+                    Margin="15,0,15,30"
                     Click="AddPassword_Click"
-                    />
-            
-            <Button Content="USB Status" 
-                    Margin="5,0,5,10"
-                    Padding="5"
-                    />
-            
-            <Button Content="Settings" 
-                    Margin="5,0,5,10"
-                    Padding="5"
-                    />
+                    Content="+ Add Password"
+                    Style="{StaticResource ModernButtonStyle}" />
 
-        </StackPanel>
+                <TextBlock
+                    Margin="20,0,0,10"
+                    FontSize="12"
+                    FontWeight="Bold"
+                    Foreground="#666666"
+                    Text="MAIN MENU" />
 
-        <Grid Grid.Column="1" Margin="20">
-            <TextBlock Text="Your passwords will apperar here" 
-                       FontSize="18" 
-                       VerticalAlignment="Top" 
-                       />
-            
+                <Button
+                    Background="#3E3E42"
+                    Content="My Password"
+                    Foreground="White"
+                    Style="{StaticResource MenuButtonStyle}" />
+
+                <Button Content="Favorites" Style="{StaticResource MenuButtonStyle}" />
+
+                <Button Content="USB Security Key" Style="{StaticResource MenuButtonStyle}" />
+
+                <TextBlock
+                    Margin="20,20,0,10"
+                    FontSize="12"
+                    FontWeight="Bold"
+                    Foreground="#666666"
+                    Text="SYSTEM" />
+
+                <Button Content="Settings" Style="{StaticResource MenuButtonStyle}" />
+                <Button
+                    Click="LockVault_Click"
+                    Content="Lock Vault"
+                    Style="{StaticResource MenuButtonStyle}" />
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Column="1" Margin="30">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Margin="0,0,0,20">
+                <TextBlock
+                    FontSize="26"
+                    FontWeight="SemiBold"
+                    Foreground="#333333"
+                    Text="My Passwords" />
+                <TextBlock
+                    Margin="0,5,0,0"
+                    FontSize="14"
+                    Foreground="#777777"
+                    Text="Manage and secure your credentials" />
+            </StackPanel>
+
+            <DataGrid
+                x:Name="PasswordsGrid"
+                Grid.Row="1"
+                AutoGenerateColumns="False"
+                Background="White"
+                BorderThickness="0"
+                CanUserAddRows="False"
+                GridLinesVisibility="Horizontal"
+                HeadersVisibility="Column"
+                HorizontalGridLinesBrush="#EEEEEE"
+                IsReadOnly="True"
+                RowHeight="40">
+
+                <DataGrid.ColumnHeaderStyle>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="FontWeight" Value="SemiBold" />
+                        <Setter Property="Padding" Value="10" />
+                        <Setter Property="Foreground" Value="#555555" />
+                        <Setter Property="BorderThickness" Value="0,0,0,2" />
+                        <Setter Property="BorderBrush" Value="#EEEEEE" />
+                    </Style>
+                </DataGrid.ColumnHeaderStyle>
+
+                <DataGrid.CellStyle>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="Padding" Value="10,0" />
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Setter Property="VerticalContentAlignment" Value="Center" />
+                    </Style>
+                </DataGrid.CellStyle>
+
+                <DataGrid.Columns>
+                    <DataGridTextColumn
+                        Width="*"
+                        Binding="{Binding Service}"
+                        FontWeight="Bold"
+                        Header="Service">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn
+                        Width="*"
+                        Binding="{Binding Login}"
+                        Header="Login">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn
+                        Width="100"
+                        Binding="{Binding MaskedPassword}"
+                        FontFamily="Consolas"
+                        Header="Password">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn
+                        Width="*"
+                        Binding="{Binding Url}"
+                        Foreground="Blue"
+                        Header="Website">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Center" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTemplateColumn Width="80">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button
+                                    Margin="2,5"
+                                    Padding="5,2"
+                                    Background="#EEEEEE"
+                                    BorderThickness="0"
+                                    Click="CopyPassword_Click"
+                                    Content="Copy"
+                                    Cursor="Hand"
+                                    FontSize="11" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
         </Grid>
-
     </Grid>
 </Window>
