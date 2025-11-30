@@ -84,8 +84,8 @@ namespace PasswordVaultUSB.Views
 
         private void ResetErrors()
         {
-            ServiceErrorText.Visibility= Visibility.Collapsed;
-            LoginErrorText.Visibility= Visibility.Collapsed;
+            ServiceErrorText.Visibility = Visibility.Collapsed;
+            LoginErrorText.Visibility = Visibility.Collapsed;
             PasswordErrorText.Visibility = Visibility.Collapsed;
         }
 

@@ -61,7 +61,6 @@
                 <Border
                     Grid.Row="2"
                     Height="45"
-                    Background="#FAFAFA"
                     BorderBrush="#DDDDDD"
                     BorderThickness="1"
                     CornerRadius="5">
