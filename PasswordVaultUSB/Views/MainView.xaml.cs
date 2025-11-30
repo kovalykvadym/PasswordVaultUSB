@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -42,6 +43,35 @@ namespace PasswordVaultUSB.Views
 
             PasswordsGrid.ItemsSource = Passwords;
 
+            ICollectionView view = CollectionViewSource.GetDefaultView(Passwords);
+
+            view.Filter = FilterPasswords;
+
+        }
+
+        private bool FilterPasswords(object item)
+        {
+            if (item is PasswordRecord entry)
+            {
+                string searchText = SearchBox.Text;
+
+                if(string.IsNullOrWhiteSpace(searchText))
+                {
+                    return true; 
+                }
+
+                string searchLower = searchText.ToLower();
+
+                return  (entry.Service != null && entry.Service.ToLower().Contains(searchLower)) || 
+                        (entry.Login != null && entry.Login.ToLower().Contains(searchLower)) || 
+                        (entry.Url != null && entry.Url.ToLower().Contains(searchLower));
+            }
+            return false;
+        }
+
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            CollectionViewSource.GetDefaultView(Passwords).Refresh();
         }
 
         private void AddPassword_Click(object sender, RoutedEventArgs e)
@@ -114,7 +144,6 @@ namespace PasswordVaultUSB.Views
             }
 
         }
-
 
         private void ToggleShowPassword_Click(object sender, RoutedEventArgs e)
         {

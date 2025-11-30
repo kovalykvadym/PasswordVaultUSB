@@ -75,18 +75,83 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <StackPanel Grid.Row="0" Margin="0,0,0,20">
-                <TextBlock
-                    FontSize="26"
-                    FontWeight="SemiBold"
-                    Foreground="#333333"
-                    Text="My Passwords" />
-                <TextBlock
-                    Margin="0,5,0,0"
-                    FontSize="14"
-                    Foreground="#777777"
-                    Text="Manage and secure your credentials" />
-            </StackPanel>
+            <Grid Grid.Row="0" Margin="0,0,0,20">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="250" />
+                </Grid.ColumnDefinitions>
+
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock
+                        FontSize="26"
+                        FontWeight="SemiBold"
+                        Foreground="#333333"
+                        Text="My Passwords" />
+                    <TextBlock
+                        FontSize="14"
+                        Foreground="#777777"
+                        Text="Manage and secure your credentials" />
+                </StackPanel>
+
+                <Border
+                    Grid.Column="1"
+                    Padding="10,5"
+                    VerticalAlignment="Center"
+                    Background="White"
+                    BorderBrush="#DDDDDD"
+                    BorderThickness="1"
+                    CornerRadius="15">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock
+                            Margin="0,0,5,0"
+                            VerticalAlignment="Center"
+                            Foreground="#AAA">
+                            <Image
+                                Width="20"
+                                Height="20"
+                                Source="/Resources/search.png" />
+                        </TextBlock>
+
+                        <TextBox
+                            x:Name="SearchBox"
+                            Grid.Column="1"
+                            VerticalContentAlignment="Center"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            FontSize="14"
+                            TextChanged="SearchBox_TextChanged" />
+
+                        <TextBlock
+                            Grid.Column="1"
+                            Margin="2,0,0,0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Center"
+                            Foreground="#DDDDDD"
+                            IsHitTestVisible="False"
+                            Text="Search...">
+
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+
+                        </TextBlock>
+                    </Grid>
+                </Border>
+            </Grid>
 
             <DataGrid
                 x:Name="PasswordsGrid"
