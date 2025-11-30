@@ -124,7 +124,7 @@ namespace PasswordVaultUSB.Views
 
                     PasswordsGrid.Items.Refresh();
 
-                    MessageBox.Show("Record updated successflly!", "Updated", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Record updated successfully!", "Updated", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
         }

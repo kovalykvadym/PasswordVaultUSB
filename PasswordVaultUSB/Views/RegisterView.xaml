@@ -12,6 +12,7 @@
     MinHeight="350"
     Background="{StaticResource BackgroundColor}"
     FontFamily="Segoe UI"
+    KeyDown="Window_KeyDown"
     Style="{StaticResource WindowStyle}"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
@@ -35,11 +36,11 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="20" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="15" />
+                    <RowDefinition Height="5" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="15" />
+                    <RowDefinition Height="5" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="30" />
+                    <RowDefinition Height="10" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
 
@@ -81,19 +82,24 @@
                             Background="Transparent"
                             BorderThickness="0"
                             FontSize="16"
-                            TextChanged="RegInput_Changed" />
+                            TextChanged="RegUsernameInput_TextChanged" />
                     </Border>
                     <TextBlock
                         x:Name="UsernameErrorText"
-                        Style="{StaticResource ErrorTextStyle}"
-                        Text="Enter username" />
+                        Margin="2,2,0,2"
+                        HorizontalAlignment="Left"
+                        FontSize="13"
+                        Foreground="#D8000C"
+                        TextWrapping="Wrap"
+                        Visibility="Collapsed" />
                 </StackPanel>
 
                 <StackPanel Grid.Row="4">
                     <TextBlock
                         Margin="0,0,0,5"
+                        FontSize="14"
                         FontWeight="SemiBold"
-                        Foreground="#555555"
+                        Foreground="#777777"
                         Text="Password" />
                     <Border
                         Height="45"
@@ -147,15 +153,20 @@
                     </Border>
                     <TextBlock
                         x:Name="PasswordErrorText"
-                        Style="{StaticResource ErrorTextStyle}"
-                        Text="Enter password" />
+                        Margin="2,2,0,2"
+                        HorizontalAlignment="Left"
+                        FontSize="13"
+                        Foreground="#D8000C"
+                        TextWrapping="Wrap"
+                        Visibility="Collapsed" />
                 </StackPanel>
 
                 <StackPanel Grid.Row="6">
                     <TextBlock
                         Margin="0,0,0,5"
+                        FontSize="14"
                         FontWeight="SemiBold"
-                        Foreground="#555555"
+                        Foreground="#777777"
                         Text="Repeat Password" />
                     <Border
                         Height="45"
@@ -177,7 +188,7 @@
                                 BorderThickness="0"
                                 FontFamily="Consolas"
                                 FontSize="18"
-                                PasswordChanged="RegPasswordInput_PasswordChanged" />
+                                PasswordChanged="ConfPasswordInput_PasswordChanged" />
 
                             <TextBox
                                 x:Name="ConfPasswordVisible"
@@ -188,7 +199,7 @@
                                 BorderThickness="0"
                                 FontFamily="Consolas"
                                 FontSize="18"
-                                TextChanged="RegPasswordVisible_TextChanged"
+                                TextChanged="ConfPasswordVisible_TextChanged"
                                 Visibility="Collapsed" />
 
                             <Button
@@ -196,7 +207,7 @@
                                 Grid.Column="1"
                                 Background="Transparent"
                                 BorderThickness="0"
-                                Click="ToggleRegPasswordButton_Click"
+                                Click="ToggleConfPasswordButton_Click"
                                 Cursor="Hand">
                                 <Viewbox Width="20" Height="20">
                                     <Image
@@ -209,8 +220,12 @@
                     </Border>
                     <TextBlock
                         x:Name="ConfPasswordErrorText"
-                        Style="{StaticResource ErrorTextStyle}"
-                        Text="Confirm password" />
+                        Margin="2,2,0,2"
+                        HorizontalAlignment="Left"
+                        FontSize="13"
+                        Foreground="#D8000C"
+                        TextWrapping="Wrap"
+                        Visibility="Collapsed" />
                 </StackPanel>
 
                 <Button

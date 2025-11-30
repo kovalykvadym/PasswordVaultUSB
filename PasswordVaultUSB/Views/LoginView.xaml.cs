@@ -32,25 +32,48 @@ namespace PasswordVaultUSB.Views
 
         private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
-            StatusText.Text = "";
+            ResetErrors();
+
+            string username = UsernameInput.Text;
             string password = PasswordInput.Password;
+
+            bool hasError = false;
+
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                UsernameErrorText.Text = "Please enter your username!";
+                UsernameErrorText.Visibility = Visibility.Visible;
+                hasError = true;
+            }
 
             if (string.IsNullOrEmpty(password))
             {
-                StatusText.Text = "Please enter your password!";
-                return;
+                PasswordErrorText.Text = "Please enter your password!";
+                PasswordErrorText.Visibility = Visibility.Visible;
+                hasError = true;
+            }
+            else if(password != "1234")
+            {
+                PasswordErrorText.Text = "Incorrect password. Please try again.";
+                PasswordErrorText.Visibility = Visibility.Visible;
+                hasError = true;
             }
 
-            if(password != "1234")
+            if (hasError)
             {
-                StatusText.Text = "Incorrect password. Please try again.";
                 return;
             }
 
             var mainView = new MainView();
-            mainView.Show();
             Application.Current.MainWindow = mainView;
+            mainView.Show();
             this.Close();
+        }
+
+        private void ResetErrors()
+        {
+            UsernameErrorText.Visibility = Visibility.Collapsed;
+            PasswordErrorText.Visibility = Visibility.Collapsed;
         }
 
         private void TogglePasswordButton_Click(object sender, RoutedEventArgs e)
@@ -79,6 +102,10 @@ namespace PasswordVaultUSB.Views
             if (!_isPasswordVisible)
             {
                 PasswordVisible.Text = PasswordInput.Password;
+                if (PasswordErrorText.Visibility == Visibility.Visible)
+                {
+                    PasswordErrorText.Visibility = Visibility.Collapsed;
+                }
             }
         }
 
@@ -87,7 +114,18 @@ namespace PasswordVaultUSB.Views
             if (_isPasswordVisible)
             {
                 PasswordInput.Password = PasswordVisible.Text;
+                if (PasswordErrorText.Visibility == Visibility.Visible)
+                {
+                    PasswordErrorText.Visibility = Visibility.Collapsed;
+                }
             }
+        }
+
+        private void GoToRegister_Click(object sender, RoutedEventArgs e)
+        {
+            var registerView = new RegisterView();
+            registerView.Show();
+            this.Close();
         }
     }
 }

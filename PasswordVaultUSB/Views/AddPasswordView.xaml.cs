@@ -89,7 +89,7 @@ namespace PasswordVaultUSB.Views
             PasswordErrorText.Visibility = Visibility.Collapsed;
         }
 
-        private void Input_TextChanged(object sender, RoutedEventArgs e)
+        private void Input_TextChanged(object sender, TextChangedEventArgs e)
         {
             if(sender == ServiceInput)
             {
@@ -144,7 +144,7 @@ namespace PasswordVaultUSB.Views
             }
         }
 
-        private void PasswordVisible_TextCanged(object sender, RoutedEventArgs e)
+        private void PasswordVisible_TextChanged(object sender, RoutedEventArgs e)
         {
             if (_isPasswordVisible)
             {
@@ -153,16 +153,6 @@ namespace PasswordVaultUSB.Views
                     PasswordErrorText.Visibility = Visibility.Collapsed;
                 }
             }
-        }
-
-        private void UrlInput_TextChanged(object sender, TextChangedEventArgs e)
-        {
-
-        }
-
-        private void NotesInput_TextChanged(object sender, TextChangedEventArgs e)
-        {
-
         }
     }
 }

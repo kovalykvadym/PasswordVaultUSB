@@ -31,10 +31,8 @@ namespace PasswordVaultUSB.Models
                     OnPropertyChanged(nameof(EyeIconOpacity));
                 }
             }
-
         }
         public string DisplayPassword => IsPasswordVisible ? Password : "*********";
-
         public double EyeIconOpacity => IsPasswordVisible ? 1.0 : 0.4;
 
         public event PropertyChangedEventHandler PropertyChanged;
