@@ -75,6 +75,59 @@ namespace PasswordVaultUSB.Views
             }
         }
 
+        private void EditPassword_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var entry = button.DataContext as PasswordRecord;
+
+            if (entry != null)
+            {
+                var editWindow = new AddPasswordView(entry);
+
+                if(editWindow.ShowDialog() == true)
+                {
+                    entry.Service = editWindow.Service;
+                    entry.Login = editWindow.Login;
+                    entry.Password = editWindow.Password;
+                    entry.Url = editWindow.Url;
+                    entry.Notes = editWindow.Notes;
+
+                    PasswordsGrid.Items.Refresh();
+
+                    MessageBox.Show("Record updated successflly!", "Updated", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+        }
+
+        private void DeletePassword_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var entry = button.DataContext as PasswordRecord;
+
+            if (entry != null)
+            {
+                var result = MessageBox.Show($"Are you sure you want to delete password for '{entry.Service}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                if (result == MessageBoxResult.Yes) 
+                {
+                    Passwords.Remove(entry);
+                }
+            }
+
+        }
+
+
+        private void ToggleShowPassword_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var entry = button.DataContext as PasswordRecord;
+
+            if (entry != null)
+            {
+                entry.IsPasswordVisible = !entry.IsPasswordVisible;
+            }
+        }
+
+
         private void LockVault_Click(object sender, RoutedEventArgs e)
         {
             var loginView = new LoginView();

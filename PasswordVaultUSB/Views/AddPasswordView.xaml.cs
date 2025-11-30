@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PasswordVaultUSB.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,6 +27,19 @@ namespace PasswordVaultUSB.Views
         public AddPasswordView()
         {
             InitializeComponent();
+        }
+
+        public AddPasswordView(PasswordRecord recordToEdit) : this()
+        {
+            ServiceInput.Text = recordToEdit.Service;
+            LoginInput.Text = recordToEdit.Login;
+            PasswordInput.Password = recordToEdit.Password;
+            UrlInput.Text = recordToEdit.Url;
+            NotesInput.Text = recordToEdit.Notes;
+
+            Title = "Edit information"; // МОЖЛИВО ЗМІНИТИ НА ЩОСЬ ПО МЕНШЕ
+
+            SavePasswordButton.Content = "Update";
         }
 
         private void AddButton_Click(object sender, RoutedEventArgs e)

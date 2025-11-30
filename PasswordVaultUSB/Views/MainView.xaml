@@ -109,6 +109,8 @@
                         <Setter Property="Foreground" Value="#555555" />
                         <Setter Property="BorderThickness" Value="0,0,0,2" />
                         <Setter Property="BorderBrush" Value="#EEEEEE" />
+                        <Setter Property="VerticalContentAlignment" Value="Center" />
+                        <Setter Property="HorizontalContentAlignment" Value="Center" />
                     </Style>
                 </DataGrid.ColumnHeaderStyle>
 
@@ -145,18 +147,36 @@
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
-                    <DataGridTextColumn
-                        Width="100"
-                        Binding="{Binding MaskedPassword}"
-                        FontFamily="Consolas"
-                        Header="Password">
-                        <DataGridTextColumn.ElementStyle>
-                            <Style TargetType="TextBlock">
-                                <Setter Property="HorizontalAlignment" Value="Center" />
-                                <Setter Property="VerticalAlignment" Value="Center" />
-                            </Style>
-                        </DataGridTextColumn.ElementStyle>
-                    </DataGridTextColumn>
+
+
+                    <DataGridTemplateColumn Width="150" Header="Password">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+                                    <TextBlock
+                                        Width="100"
+                                        FontFamily="Consolas"
+                                        FontSize="14"
+                                        Text="{Binding DisplayPassword}"
+                                        TextAlignment="Center"
+                                        TextTrimming="CharacterEllipsis" />
+
+                                    <Button
+                                        Padding="2,0"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Click="ToggleShowPassword_Click"
+                                        Cursor="Hand">
+                                        <Image
+                                            Width="18"
+                                            Height="18"
+                                            Opacity="{Binding EyeIconOpacity}"
+                                            Source="/Resources/visibility.png" />
+                                    </Button>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                     <DataGridTextColumn
                         Width="*"
                         Binding="{Binding Url}"
@@ -170,18 +190,54 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTemplateColumn Width="80">
+                    <DataGridTemplateColumn Width="120" Header="Actions">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Button
-                                    Margin="2,5"
-                                    Padding="5,2"
-                                    Background="#EEEEEE"
-                                    BorderThickness="0"
-                                    Click="CopyPassword_Click"
-                                    Content="Copy"
-                                    Cursor="Hand"
-                                    FontSize="11" />
+                                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+
+                                    <Button
+                                        Margin="0,0,5,0"
+                                        Padding="5,2"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Click="CopyPassword_Click"
+                                        Cursor="Hand"
+                                        ToolTip="Copy to Clipboard">
+                                        <Image
+                                            Width="18"
+                                            Height="18"
+                                            Source="/Resources/copy.png" />
+                                    </Button>
+
+                                    <Button
+                                        Margin="0,0,5,0"
+                                        Padding="5,2"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Click="EditPassword_Click"
+                                        Cursor="Hand"
+                                        ToolTip="Edit Record">
+                                        <Image
+                                            Width="18"
+                                            Height="18"
+                                            Source="/Resources/edit.png" />
+                                    </Button>
+
+                                    <Button
+                                        Margin="0,0,5,0"
+                                        Padding="5,2"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Click="DeletePassword_Click"
+                                        Cursor="Hand"
+                                        ToolTip="Delete Record">
+                                        <Image
+                                            Width="18"
+                                            Height="18"
+                                            Source="/Resources/trash_can.png" />
+                                    </Button>
+
+                                </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
