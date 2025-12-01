@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:PasswordVaultUSB.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:PasswordVaultUSB.ViewModels"
     Title="Autorization"
     Width="800"
     Height="600"
@@ -12,10 +13,21 @@
     MinHeight="350"
     Background="{StaticResource BackgroundColor}"
     FontFamily="Segoe UI"
-    KeyDown="Window_KeyDown"
     Style="{StaticResource WindowStyle}"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
+
+    <Window.DataContext>
+        <vm:LoginViewModel />
+    </Window.DataContext>
+
+    <Window.InputBindings>
+        <KeyBinding
+            Key="Enter"
+            Command="{Binding LoginCommand}"
+            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}" />
+    </Window.InputBindings>
+
     <Grid>
         <Border
             Width="400"
@@ -71,21 +83,21 @@
                         BorderThickness="1"
                         CornerRadius="5">
                         <TextBox
-                            x:Name="UsernameInput"
                             Padding="10,0"
                             VerticalContentAlignment="Center"
                             Background="Transparent"
                             BorderThickness="0"
-                            FontSize="16" />
+                            FontSize="16"
+                            Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" />
                     </Border>
                     <TextBlock
-                        x:Name="UsernameErrorText"
                         Margin="2,5,0,0"
                         HorizontalAlignment="Left"
                         FontSize="13"
                         Foreground="#D8000C"
+                        Text="{Binding UsernameError}"
                         TextWrapping="Wrap"
-                        Visibility="Collapsed" />
+                        Visibility="{Binding HasUsernameError, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </StackPanel>
 
 
@@ -114,11 +126,20 @@
                                 Background="Transparent"
                                 BorderThickness="0"
                                 FontFamily="Consolas"
-                                FontSize="18"
-                                PasswordChanged="PasswordInput_PasswordChanged" />
+                                FontSize="18">
+                                <PasswordBox.Style>
+                                    <Style TargetType="PasswordBox">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsPasswordVisible}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </PasswordBox.Style>
+                            </PasswordBox>
 
                             <TextBox
-                                x:Name="PasswordVisible"
                                 Grid.Column="0"
                                 Padding="10,0"
                                 VerticalContentAlignment="Center"
@@ -126,40 +147,58 @@
                                 BorderThickness="0"
                                 FontFamily="Consolas"
                                 FontSize="18"
-                                TextChanged="PasswordVisible_TextChanged"
-                                Visibility="Collapsed" />
+                                Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}">
+                                <TextBox.Style>
+                                    <Style TargetType="TextBox">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsPasswordVisible}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
 
                             <Button
-                                x:Name="TogglePasswordButton"
                                 Grid.Column="1"
                                 Background="Transparent"
                                 BorderThickness="0"
-                                Click="TogglePasswordButton_Click"
+                                Command="{Binding TogglePasswordVisibilityCommand}"
                                 Cursor="Hand">
                                 <Viewbox Width="20" Height="20">
-                                    <Image
-                                        x:Name="EyeIcon"
-                                        Opacity="0.6"
-                                        Source="/Resources/visibility.png" />
+                                    <Image Opacity="0.6">
+                                        <Image.Style>
+                                            <Style TargetType="Image">
+                                                <Setter Property="Source" Value="/Resources/visibility.png" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsPasswordVisible}" Value="True">
+                                                        <Setter Property="Source" Value="/Resources/visibility_off.png" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Image.Style>
+                                    </Image>
                                 </Viewbox>
                             </Button>
                         </Grid>
                     </Border>
                     <TextBlock
-                        x:Name="PasswordErrorText"
                         Margin="2,5,0,10"
                         HorizontalAlignment="Left"
                         FontSize="13"
                         Foreground="#D8000C"
+                        Text="{Binding PasswordError}"
                         TextWrapping="Wrap"
-                        Visibility="Collapsed" />
+                        Visibility="{Binding HasPasswordError, Converter={StaticResource BoolToVisibilityConverter}}" />
                 </StackPanel>
 
                 <Button
                     Grid.Row="6"
                     Width="200"
                     Height="45"
-                    Click="LoginButton_Click"
+                    Command="{Binding LoginCommand}"
+                    CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
                     Content="Log in"
                     Style="{StaticResource ModernButtonStyle}" />
 
@@ -169,7 +208,8 @@
                     HorizontalAlignment="Center"
                     Background="Transparent"
                     BorderThickness="0"
-                    Click="GoToRegister_Click"
+                    Command="{Binding NavigateToRegisterCommand}"
+                    CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
                     Content="Don't have an account? Register"
                     Cursor="Hand"
                     Foreground="#0078D7" />
