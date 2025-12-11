@@ -1,0 +1,341 @@
+﻿<Window
+    x:Class="PasswordVaultUSB.Views.SettingsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="Settings"
+    Width="600"
+    Height="500"
+    ResizeMode="NoResize"
+    Style="{StaticResource WindowStyle}"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <Grid Background="#F0F2F5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!--  Header  -->
+        <Border
+            Grid.Row="0"
+            Padding="20"
+            Background="White"
+            BorderBrush="#E0E0E0"
+            BorderThickness="0,0,0,1">
+            <StackPanel>
+                <TextBlock
+                    FontSize="24"
+                    FontWeight="SemiBold"
+                    Foreground="#333333"
+                    Text="Settings" />
+                <TextBlock
+                    Margin="0,5,0,0"
+                    FontSize="13"
+                    Foreground="#777777"
+                    Text="Configure your PVault preferences" />
+            </StackPanel>
+        </Border>
+
+        <!--  Content  -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="20">
+
+                <!--  Security Settings  -->
+                <Border
+                    Padding="15"
+                    Background="White"
+                    BorderBrush="#E0E0E0"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                    <StackPanel>
+                        <TextBlock
+                            FontSize="16"
+                            FontWeight="SemiBold"
+                            Foreground="#333"
+                            Text="Security" />
+                        <Separator Margin="0,10,0,15" Background="#E0E0E0" />
+
+                        <!--  Auto-lock timeout  -->
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock
+                                    FontSize="14"
+                                    FontWeight="SemiBold"
+                                    Foreground="#333"
+                                    Text="Auto-lock timeout" />
+                                <TextBlock
+                                    Margin="0,3,0,0"
+                                    FontSize="12"
+                                    Foreground="#777"
+                                    Text="Lock vault after period of inactivity"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <ComboBox
+                                x:Name="AutoLockComboBox"
+                                Grid.Column="1"
+                                Width="120"
+                                VerticalAlignment="Center"
+                                SelectedIndex="2">
+                                <ComboBoxItem Content="1 minute" Tag="1" />
+                                <ComboBoxItem Content="5 minutes" Tag="5" />
+                                <ComboBoxItem Content="15 minutes" Tag="15" />
+                                <ComboBoxItem Content="30 minutes" Tag="30" />
+                                <ComboBoxItem Content="Never" Tag="0" />
+                            </ComboBox>
+                        </Grid>
+
+                        <!--  USB Check Interval  -->
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock
+                                    FontSize="14"
+                                    FontWeight="SemiBold"
+                                    Foreground="#333"
+                                    Text="USB check interval" />
+                                <TextBlock
+                                    Margin="0,3,0,0"
+                                    FontSize="12"
+                                    Foreground="#777"
+                                    Text="How often to check if USB is connected"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <ComboBox
+                                x:Name="UsbCheckComboBox"
+                                Grid.Column="1"
+                                Width="120"
+                                VerticalAlignment="Center"
+                                SelectedIndex="1">
+                                <ComboBoxItem Content="1 second" Tag="1" />
+                                <ComboBoxItem Content="3 seconds" Tag="3" />
+                                <ComboBoxItem Content="5 seconds" Tag="5" />
+                                <ComboBoxItem Content="10 seconds" Tag="10" />
+                            </ComboBox>
+                        </Grid>
+
+                        <!--  Clear clipboard  -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock
+                                    FontSize="14"
+                                    FontWeight="SemiBold"
+                                    Foreground="#333"
+                                    Text="Auto-clear clipboard" />
+                                <TextBlock
+                                    Margin="0,3,0,0"
+                                    FontSize="12"
+                                    Foreground="#777"
+                                    Text="Automatically clear clipboard after copying password"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <CheckBox
+                                x:Name="ClearClipboardCheckBox"
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                IsChecked="True" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!--  Display Settings  -->
+                <Border
+                    Margin="0,15,0,0"
+                    Padding="15"
+                    Background="White"
+                    BorderBrush="#E0E0E0"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                    <StackPanel>
+                        <TextBlock
+                            FontSize="16"
+                            FontWeight="SemiBold"
+                            Foreground="#333"
+                            Text="Display" />
+                        <Separator Margin="0,10,0,15" Background="#E0E0E0" />
+
+                        <!--  Show password by default  -->
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock
+                                    FontSize="14"
+                                    FontWeight="SemiBold"
+                                    Foreground="#333"
+                                    Text="Show passwords on copy" />
+                                <TextBlock
+                                    Margin="0,3,0,0"
+                                    FontSize="12"
+                                    Foreground="#777"
+                                    Text="Briefly show password when copying to clipboard"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <CheckBox
+                                x:Name="ShowOnCopyCheckBox"
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                IsChecked="False" />
+                        </Grid>
+
+                        <!--  Confirm deletions  -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock
+                                    FontSize="14"
+                                    FontWeight="SemiBold"
+                                    Foreground="#333"
+                                    Text="Confirm deletions" />
+                                <TextBlock
+                                    Margin="0,3,0,0"
+                                    FontSize="12"
+                                    Foreground="#777"
+                                    Text="Ask for confirmation before deleting entries"
+                                    TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <CheckBox
+                                x:Name="ConfirmDeletionsCheckBox"
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                IsChecked="True" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!--  Data Management  -->
+                <Border
+                    Margin="0,15,0,0"
+                    Padding="15"
+                    Background="White"
+                    BorderBrush="#E0E0E0"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                    <StackPanel>
+                        <TextBlock
+                            FontSize="16"
+                            FontWeight="SemiBold"
+                            Foreground="#333"
+                            Text="Data Management" />
+                        <Separator Margin="0,10,0,15" Background="#E0E0E0" />
+
+                        <Button
+                            Height="36"
+                            Margin="0,0,0,10"
+                            Click="ExportData_Click"
+                            Content="Export Vault Data"
+                            Style="{StaticResource ModernButtonStyle}" />
+
+                        <Button
+                            Height="36"
+                            Margin="0,0,0,10"
+                            Click="ImportData_Click"
+                            Content="Import Vault Data"
+                            Style="{StaticResource ModernButtonStyle}" />
+
+                        <Button
+                            Height="36"
+                            Background="#DC3545"
+                            Click="ClearAllData_Click"
+                            Content="Clear All Data"
+                            Foreground="White"
+                            Style="{StaticResource ModernButtonStyle}" />
+                    </StackPanel>
+                </Border>
+
+                <!--  About  -->
+                <Border
+                    Margin="0,15,0,0"
+                    Padding="15"
+                    Background="White"
+                    BorderBrush="#E0E0E0"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                    <StackPanel>
+                        <TextBlock
+                            FontSize="16"
+                            FontWeight="SemiBold"
+                            Foreground="#333"
+                            Text="About" />
+                        <Separator Margin="0,10,0,15" Background="#E0E0E0" />
+
+                        <TextBlock
+                            FontSize="13"
+                            Foreground="#555"
+                            TextWrapping="Wrap">
+                            <Run FontWeight="SemiBold" Text="PVault" />
+                            <Run Text="- USB Password Manager" />
+                            <LineBreak />
+                            <Run Text="Version 1.0.0" />
+                            <LineBreak />
+                            <LineBreak />
+                            <Run Text="A secure password manager that stores encrypted data on USB drives." />
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!--  Footer Buttons  -->
+        <Border
+            Grid.Row="2"
+            Padding="20,15"
+            Background="White"
+            BorderBrush="#E0E0E0"
+            BorderThickness="0,1,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Button
+                    Grid.Column="1"
+                    Width="100"
+                    Height="36"
+                    Margin="0,0,10,0"
+                    Click="Cancel_Click"
+                    Content="Cancel"
+                    Style="{StaticResource ModernButtonStyle}" />
+
+                <Button
+                    Grid.Column="2"
+                    Width="100"
+                    Height="36"
+                    Click="SaveSettings_Click"
+                    Content="Save"
+                    Style="{StaticResource ModernButtonStyle}" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

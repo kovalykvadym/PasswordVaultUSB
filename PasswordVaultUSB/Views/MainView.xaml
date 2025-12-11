@@ -46,21 +46,21 @@
                 <Button
                     x:Name="MyPasswordsButton"
                     Background="#3E3E42"
+                    Click="MenuButton_Click"
                     Content="My Password"
                     Foreground="White"
-                    Click="MenuButton_Click"
                     Style="{StaticResource MenuButtonStyle}" />
 
                 <Button
                     x:Name="FavoritesButton"
-                    Content="Favorites"
                     Click="MenuButton_Click"
+                    Content="Favorites"
                     Style="{StaticResource MenuButtonStyle}" />
 
                 <Button
                     x:Name="UsbButton"
-                    Content="USB Security Key"
                     Click="MenuButton_Click"
+                    Content="USB Security Key"
                     Style="{StaticResource MenuButtonStyle}" />
 
                 <TextBlock
@@ -72,8 +72,8 @@
 
                 <Button
                     x:Name="SettingsButton"
-                    Content="Settings"
                     Click="MenuButton_Click"
+                    Content="Settings"
                     Style="{StaticResource MenuButtonStyle}" />
                 <Button
                     Click="LockVault_Click"
@@ -86,10 +86,14 @@
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Grid
+                x:Name="HeaderGrid"
+                Grid.Row="0"
+                Margin="0,0,0,20">
 
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -167,9 +171,124 @@
                 </Border>
             </Grid>
 
+            <StackPanel
+                x:Name="ChangePasswordPanel"
+                Grid.Row="1"
+                Margin="0,0,0,20"
+                Background="White"
+                Orientation="Vertical"
+                Visibility="Collapsed">
+                <TextBlock
+                    FontSize="18"
+                    FontWeight="SemiBold"
+                    Foreground="#333"
+                    Text="Change master password" />
+
+                <StackPanel Margin="0,10,0,10">
+                    <TextBlock
+                        Margin="0,0,0,5"
+                        FontWeight="SemiBold"
+                        Foreground="#666"
+                        Text="Current password" />
+                    <Border
+                        Height="36"
+                        BorderBrush="#DDDDDD"
+                        BorderThickness="1"
+                        CornerRadius="5">
+                        <PasswordBox
+                            x:Name="CurrentPasswordInput"
+                            Padding="10,0"
+                            VerticalContentAlignment="Center"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            FontFamily="Consolas"
+                            FontSize="14" />
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,0,10">
+                    <TextBlock
+                        Margin="0,0,0,5"
+                        FontWeight="SemiBold"
+                        Foreground="#666"
+                        Text="New password" />
+                    <Border
+                        Height="36"
+                        BorderBrush="#DDDDDD"
+                        BorderThickness="1"
+                        CornerRadius="5">
+                        <PasswordBox
+                            x:Name="NewPasswordInput"
+                            Padding="10,0"
+                            VerticalContentAlignment="Center"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            FontFamily="Consolas"
+                            FontSize="14" />
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,0,15">
+                    <TextBlock
+                        Margin="0,0,0,5"
+                        FontWeight="SemiBold"
+                        Foreground="#666"
+                        Text="Confirm new password" />
+                    <Border
+                        Height="36"
+                        BorderBrush="#DDDDDD"
+                        BorderThickness="1"
+                        CornerRadius="5">
+                        <PasswordBox
+                            x:Name="ConfirmPasswordInput"
+                            Padding="10,0"
+                            VerticalContentAlignment="Center"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            FontFamily="Consolas"
+                            FontSize="14" />
+                    </Border>
+                </StackPanel>
+
+                <Button
+                    Width="140"
+                    Height="34"
+                    HorizontalAlignment="Right"
+                    Click="ApplyChangePassword_Click"
+                    Content="Update"
+                    Style="{StaticResource ModernButtonStyle}" />
+
+                <Separator Margin="0,15,0,10" />
+                <TextBlock
+                    Margin="0,0,0,5"
+                    FontWeight="SemiBold"
+                    Foreground="#666"
+                    Text="Activity log" />
+                <Border
+                    Height="150"
+                    Background="#FAFAFA"
+                    BorderBrush="#E0E0E0"
+                    BorderThickness="1"
+                    CornerRadius="6">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl x:Name="ActivityLogList" ItemsSource="{Binding ActivityLog}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock
+                                        Margin="6,2"
+                                        FontSize="13"
+                                        Foreground="#444"
+                                        Text="{Binding}" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Border>
+            </StackPanel>
+
             <DataGrid
                 x:Name="PasswordsGrid"
-                Grid.Row="1"
+                Grid.Row="2"
                 AutoGenerateColumns="False"
                 Background="White"
                 BorderThickness="0"
