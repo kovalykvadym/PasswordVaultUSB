@@ -1,5 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using PasswordVaultUSB.Models;
+using PasswordVaultUSB.Services;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -74,12 +78,49 @@ namespace PasswordVaultUSB.Views
                 return;
             }
 
-            MessageBox.Show($"User {username} created successfully", "Success");
+            try
+            {
+                string usbPath = UsbDriveService.GetUsbPath();
 
-            var mainView = new MainView();
-            Application.Current.MainWindow = mainView;
-            mainView.Show();
-            this.Close();
+                if (string.IsNullOrEmpty(usbPath))
+                {
+                    MessageBox.Show("USB drive not found! Please insert your flash drive to create a key.", "USB Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                string vaultPath = UsbDriveService.CreateVaultFolder(usbPath);
+
+                string userFilePath = System.IO.Path.Combine(vaultPath, $"{username}.dat");
+
+                if (File.Exists(userFilePath))
+                {
+                    UsernameErrorText.Text = "User already exists on this USB drive!";
+                    UsernameErrorText.Visibility = Visibility.Visible;
+                    return;
+                }
+
+                List<PasswordRecord> initialData = new List<PasswordRecord>();
+
+                string json = JsonConvert.SerializeObject(initialData);
+
+                string encryptedContent = CryptoService.Encrypt(json, pass);
+
+                File.WriteAllText(userFilePath, encryptedContent);
+
+                AppState.CurrentUserFilePath = userFilePath;
+                AppState.CurrentMasterPassword = pass;
+
+                MessageBox.Show($"User {username} registered successfully on drive {usbPath}!", "Success");
+
+                var mainView = new MainView();
+                Application.Current.MainWindow = mainView;
+                mainView.Show();
+                this.Close();
+
+            } catch (Exception ex)
+            {
+                MessageBox.Show($"Critical error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void ResetErrors()

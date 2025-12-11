@@ -1,8 +1,11 @@
-﻿using PasswordVaultUSB.Models;
+﻿using Newtonsoft.Json;
+using PasswordVaultUSB.Models;
+using PasswordVaultUSB.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,38 +17,86 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace PasswordVaultUSB.Views
 {
     public partial class MainView : Window
     {
         public ObservableCollection<PasswordRecord> Passwords { get; set; }
+        private DispatcherTimer _usbCheckTimer;
         public MainView()
         {
             InitializeComponent();
 
             Passwords = new ObservableCollection<PasswordRecord>();
-
-            Passwords.Add(new PasswordRecord {
-                Service = "Google",
-                Login = "my.email@gmail.com",
-                Password = "secretPassword123",
-                Url = "google.com"
-            });
-
-            Passwords.Add(new PasswordRecord
-            {
-                Service = "Facebook",
-                Login = "mark.zuck",
-                Password = "qwerty",
-                Url = "fb.com"
-            });
-
             PasswordsGrid.ItemsSource = Passwords;
-
             ICollectionView view = CollectionViewSource.GetDefaultView(Passwords);
-
             view.Filter = FilterPasswords;
+            LoadData();
+            StartUsbMonitoring();
+        }
+
+        private void StartUsbMonitoring()
+        {
+            _usbCheckTimer = new DispatcherTimer();
+            _usbCheckTimer.Interval = TimeSpan.FromSeconds(3);
+            _usbCheckTimer.Tick += UsbCheckTimer_Tick;
+            _usbCheckTimer.Start();
+        }
+
+        private void UsbCheckTimer_Tick(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(AppState.CurrentUserFilePath) || !File.Exists(AppState.CurrentUserFilePath))
+            {
+                _usbCheckTimer.Stop();
+                MessageBox.Show("USB Key removed! Vault locking...", "Security Alert", MessageBoxButton.OK, MessageBoxImage.Warning);
+                LockVault_Click(this, null);
+            }
+        }
+
+        private void LoadData()
+        {
+            try
+            {
+                if (File.Exists(AppState.CurrentUserFilePath))
+                {
+                    string encrypted = File.ReadAllText(AppState.CurrentUserFilePath);
+                    string json = CryptoService.Decrypt(encrypted, AppState.CurrentMasterPassword);
+                    var records = JsonConvert.DeserializeObject<List<PasswordRecord>>(json);
+
+                    if (records != null)
+                    {
+                        foreach (var record in records)
+                        {
+                            Passwords.Add(record);
+                        }
+                    }
+                }
+            } catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading data: {ex.Message}");
+            }
+        }
+
+        private void SaveData()
+        {
+            if (string.IsNullOrEmpty(AppState.CurrentUserFilePath) || string.IsNullOrEmpty(AppState.CurrentMasterPassword))
+            {
+                MessageBox.Show("Warning: MasterPassword is null. Data not saved.");
+                return;
+            }
+
+            try 
+            {
+                string json = JsonConvert.SerializeObject(Passwords);
+                string encrypted = CryptoService.Encrypt(json, AppState.CurrentMasterPassword);
+                File.WriteAllText(AppState.CurrentUserFilePath, encrypted);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading data: {ex.Message}");
+            }
 
         }
 
@@ -90,6 +141,7 @@ namespace PasswordVaultUSB.Views
                 };
 
                 Passwords.Add(newEntry);
+                SaveData();
             }
         }
 
@@ -121,10 +173,8 @@ namespace PasswordVaultUSB.Views
                     entry.Password = editWindow.Password;
                     entry.Url = editWindow.Url;
                     entry.Notes = editWindow.Notes;
-
                     PasswordsGrid.Items.Refresh();
-
-                    MessageBox.Show("Record updated successfully!", "Updated", MessageBoxButton.OK, MessageBoxImage.Information);
+                    SaveData();
                 }
             }
         }
@@ -140,6 +190,7 @@ namespace PasswordVaultUSB.Views
                 if (result == MessageBoxResult.Yes) 
                 {
                     Passwords.Remove(entry);
+                    SaveData();
                 }
             }
 
@@ -156,9 +207,16 @@ namespace PasswordVaultUSB.Views
             }
         }
 
-
         private void LockVault_Click(object sender, RoutedEventArgs e)
         {
+            if(_usbCheckTimer != null && _usbCheckTimer.IsEnabled)
+            {
+                _usbCheckTimer.Stop();
+            }
+
+            AppState.CurrentMasterPassword = null;
+            AppState.CurrentUserFilePath = null;
+
             var loginView = new LoginView();
             loginView.Show();
             this.Close();

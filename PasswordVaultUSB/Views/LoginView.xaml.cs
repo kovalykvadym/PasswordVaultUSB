@@ -1,5 +1,8 @@
-﻿using System;
+﻿using PasswordVaultUSB.Models;
+using PasswordVaultUSB.Services;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,7 +37,7 @@ namespace PasswordVaultUSB.Views
         {
             ResetErrors();
 
-            string username = UsernameInput.Text;
+            string username = UsernameInput.Text.Trim();
             string password = PasswordInput.Password;
 
             bool hasError = false;
@@ -52,22 +55,56 @@ namespace PasswordVaultUSB.Views
                 PasswordErrorText.Visibility = Visibility.Visible;
                 hasError = true;
             }
-            else if(password != "1234")
-            {
-                PasswordErrorText.Text = "Incorrect password. Please try again.";
-                PasswordErrorText.Visibility = Visibility.Visible;
-                hasError = true;
-            }
 
             if (hasError)
             {
                 return;
             }
 
-            var mainView = new MainView();
-            Application.Current.MainWindow = mainView;
-            mainView.Show();
-            this.Close();
+            try
+            {
+                string usbPath = UsbDriveService.GetUsbPath();
+
+                if (string.IsNullOrEmpty(usbPath))
+                {
+                    MessageBox.Show("USB drive not found! Please insert your flash drive to create a key.", "USB Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                string vaultPath = UsbDriveService.CreateVaultFolder(usbPath);
+                string userFilePath = System.IO.Path.Combine(vaultPath, $"{username}.dat");
+
+                if (!File.Exists(userFilePath))
+                {
+                    UsernameErrorText.Text = "User not found on this USB drive!";
+                    UsernameErrorText.Visibility = Visibility.Visible;
+                    return;
+                }
+
+                string encryptedContent = File.ReadAllText(userFilePath);
+
+                try
+                {
+                    string json = CryptoService.Decrypt(encryptedContent, password);
+
+                    AppState.CurrentUserFilePath = userFilePath;
+                    AppState.CurrentMasterPassword = password;
+
+                    var mainView = new MainView();
+                    Application.Current.MainWindow = mainView;
+                    mainView.Show();
+                    this.Close();
+                }
+                catch
+                {
+                    PasswordErrorText.Text = "Invalid password!";
+                    PasswordErrorText.Visibility = Visibility.Visible;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Critical error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void ResetErrors()
