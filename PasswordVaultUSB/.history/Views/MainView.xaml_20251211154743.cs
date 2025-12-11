@@ -25,11 +25,6 @@ namespace PasswordVaultUSB.Views
     {
         public ObservableCollection<PasswordRecord> Passwords { get; set; }
         private DispatcherTimer _usbCheckTimer;
-        private List<Button> _menuButtons;
-        private readonly Brush _activeBackground = (Brush)new BrushConverter().ConvertFromString("#3E3E42");
-        private readonly Brush _inactiveBackground = Brushes.Transparent;
-        private readonly Brush _activeForeground = Brushes.White;
-        private readonly Brush _inactiveForeground = (Brush)new BrushConverter().ConvertFromString("#A0A0A0");
         public MainView()
         {
             InitializeComponent();
@@ -38,22 +33,8 @@ namespace PasswordVaultUSB.Views
             PasswordsGrid.ItemsSource = Passwords;
             ICollectionView view = CollectionViewSource.GetDefaultView(Passwords);
             view.Filter = FilterPasswords;
-            SetupMenuButtons();
             LoadData();
             StartUsbMonitoring();
-        }
-
-        private void SetupMenuButtons()
-        {
-            _menuButtons = new List<Button>
-            {
-                MyPasswordsButton,
-                FavoritesButton,
-                UsbButton,
-                SettingsButton
-            };
-
-            SetActiveMenuButton(MyPasswordsButton);
         }
 
         private void StartUsbMonitoring()
@@ -120,30 +101,10 @@ namespace PasswordVaultUSB.Views
         }
 
         private bool _showFavoritesOnly;
-        private void MenuButton_Click(object sender, RoutedEventArgs e)
+        private void FavoritesButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button clickedButton)
-            {
-                SetActiveMenuButton(clickedButton);
-
-                _showFavoritesOnly = clickedButton == FavoritesButton;
-                CollectionViewSource.GetDefaultView(Passwords)?.Refresh();
-            }
-        }
-
-        private void SetActiveMenuButton(Button activeButton)
-        {
-            foreach (var btn in _menuButtons.Where(b => b != null))
-            {
-                btn.Background = _inactiveBackground;
-                btn.Foreground = _inactiveForeground;
-            }
-
-            if (activeButton != null)
-            {
-                activeButton.Background = _activeBackground;
-                activeButton.Foreground = _activeForeground;
-            }
+            _showFavoritesOnly = !_showFavoritesOnly;
+            CollectionViewSource.GetDefaultView(Passwords).Refresh();
         }
         private bool FilterPasswords(object item)
         {

@@ -17,7 +17,22 @@ namespace PasswordVaultUSB.Models
         public string Notes { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
+        private bool _isFavorite;
         private bool _isPasswordVisible;
+
+        public bool IsFavorite
+        {
+            get => _isFavorite;
+            set
+            {
+                if (_isFavorite != value)
+                {
+                    _isFavorite = value;
+                    OnPropertyChanged(nameof(IsFavorite));
+                    OnPropertyChanged(nameof(FavoriteIconOpacity));
+                }
+            }
+        }
 
         public bool IsPasswordVisible
         {
@@ -34,6 +49,7 @@ namespace PasswordVaultUSB.Models
         }
         public string DisplayPassword => IsPasswordVisible ? Password : "*********";
         public double EyeIconOpacity => IsPasswordVisible ? 1.0 : 0.4;
+        public double FavoriteIconOpacity => IsFavorite ? 1.0 : 0.4;
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string properyName = null)

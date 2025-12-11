@@ -128,6 +128,11 @@ namespace PasswordVaultUSB.Views
 
                 _showFavoritesOnly = clickedButton == FavoritesButton;
                 CollectionViewSource.GetDefaultView(Passwords)?.Refresh();
+
+                if (clickedButton == UsbButton)
+                {
+                    ShowChangePasswordDialog();
+                }
             }
         }
 
@@ -143,6 +148,37 @@ namespace PasswordVaultUSB.Views
             {
                 activeButton.Background = _activeBackground;
                 activeButton.Foreground = _activeForeground;
+            }
+        }
+
+        private void ShowChangePasswordDialog()
+        {
+            var dialog = new ChangePasswordView();
+
+            if (dialog.ShowDialog() == true)
+            {
+                if (string.IsNullOrEmpty(AppState.CurrentMasterPassword) || string.IsNullOrEmpty(AppState.CurrentUserFilePath))
+                {
+                    MessageBox.Show("Vault is not loaded. Please log in first.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                if (dialog.CurrentPassword != AppState.CurrentMasterPassword)
+                {
+                    MessageBox.Show("Current password is incorrect.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                try
+                {
+                    AppState.CurrentMasterPassword = dialog.NewPassword;
+                    SaveData();
+                    MessageBox.Show("Master password updated and data re-encrypted on USB.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to update password: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
         private bool FilterPasswords(object item)
