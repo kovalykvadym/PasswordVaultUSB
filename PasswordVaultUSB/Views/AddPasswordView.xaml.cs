@@ -1,116 +1,57 @@
 ﻿using PasswordVaultUSB.Models;
+using PasswordVaultUSB.ViewModels;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace PasswordVaultUSB.Views
 {
     public partial class AddPasswordView : Window
     {
-        public string Service { get; private set; }
-        public string Login { get; private set; }
-        public string Password { get; private set; }
-        public string Url { get; private set; }
-        public string Notes { get; private set; }
-
+        private AddPasswordViewModel _viewModel;
         private bool _isPasswordVisible = false;
+
+        // --- Властивості-проксі для зворотної сумісності з MainView ---
+        public string Service => _viewModel.Service;
+        public string Login => _viewModel.Login;
+        public string Password => _viewModel.Password;
+        public string Url => _viewModel.Url;
+        public string Notes => _viewModel.Notes;
+
         public AddPasswordView()
         {
             InitializeComponent();
+            InitializeViewModel(null);
         }
 
-        public AddPasswordView(PasswordRecord recordToEdit) : this()
+        public AddPasswordView(PasswordRecord recordToEdit)
         {
-            ServiceInput.Text = recordToEdit.Service;
-            LoginInput.Text = recordToEdit.Login;
-            PasswordInput.Password = recordToEdit.Password;
-            UrlInput.Text = recordToEdit.Url;
-            NotesInput.Text = recordToEdit.Notes;
-
-            Title = "Edit information"; // МОЖЛИВО ЗМІНИТИ НА ЩОСЬ ПО МЕНШЕ
-
-            SavePasswordButton.Content = "Update";
+            InitializeComponent();
+            InitializeViewModel(recordToEdit);
         }
 
-        private void AddButton_Click(object sender, RoutedEventArgs e)
+        private void InitializeViewModel(PasswordRecord record)
         {
-            ResetErrors();
+            _viewModel = new AddPasswordViewModel(record);
+            this.DataContext = _viewModel;
 
-            bool hasError = false;
-
-            if(string.IsNullOrWhiteSpace(ServiceInput.Text))
+            // Налаштовуємо закриття вікна
+            _viewModel.CloseAction = (result) =>
             {
-                ServiceErrorText.Visibility = Visibility.Visible;
-                hasError = true; 
-            }
+                this.DialogResult = result;
+                this.Close();
+            };
 
-            if (string.IsNullOrWhiteSpace(LoginInput.Text))
+            // Якщо це редагування, треба заповнити PasswordBox вручну,
+            // бо він не підтримує прямий Binding на запис
+            if (record != null && !string.IsNullOrEmpty(record.Password))
             {
-                LoginErrorText.Visibility = Visibility.Visible;
-                hasError = true;
-            }
-
-            string currentPassword = _isPasswordVisible ? PasswordVisible.Text : PasswordInput.Password;
-
-            if (string.IsNullOrWhiteSpace(currentPassword))
-            {
-                PasswordErrorText.Visibility = Visibility.Visible;
-                hasError = true;
-            }
-
-            if(hasError)
-            {
-                return;
-            }
-
-            Service = ServiceInput.Text.Trim();
-            Login = LoginInput.Text.Trim();
-            Password = currentPassword.Trim();
-            Url = UrlInput.Text.Trim();
-            Notes = NotesInput.Text.Trim();
-
-            DialogResult = true;
-        }
-
-        private void ResetErrors()
-        {
-            ServiceErrorText.Visibility = Visibility.Collapsed;
-            LoginErrorText.Visibility = Visibility.Collapsed;
-            PasswordErrorText.Visibility = Visibility.Collapsed;
-        }
-
-        private void Input_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if(sender == ServiceInput)
-            {
-                ServiceErrorText.Visibility = Visibility.Collapsed;
-            }
-
-            if (sender == LoginInput)
-            {
-                LoginErrorText.Visibility = Visibility.Collapsed;
-            }
-
-            if (sender == PasswordInput || sender == PasswordVisible)
-            {
-                PasswordErrorText.Visibility = Visibility.Collapsed;
+                PasswordInput.Password = record.Password;
             }
         }
 
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = false;
-        }
+        // --- UI Logic Only (Visual Toggle & Password Sync) ---
 
         private void TogglePasswordButton_Click(object sender, RoutedEventArgs e)
         {
@@ -120,7 +61,6 @@ namespace PasswordVaultUSB.Views
                 PasswordVisible.Text = PasswordInput.Password;
                 PasswordVisible.Visibility = Visibility.Visible;
                 PasswordInput.Visibility = Visibility.Collapsed;
-
                 EyeIcon.Source = new BitmapImage(new Uri("/Resources/visibility_off.png", UriKind.Relative));
             }
             else
@@ -128,30 +68,27 @@ namespace PasswordVaultUSB.Views
                 PasswordInput.Password = PasswordVisible.Text;
                 PasswordInput.Visibility = Visibility.Visible;
                 PasswordVisible.Visibility = Visibility.Collapsed;
-
                 EyeIcon.Source = new BitmapImage(new Uri("/Resources/visibility.png", UriKind.Relative));
             }
         }
 
+        // Синхронізація PasswordBox -> ViewModel
         private void PasswordInput_PasswordChanged(object sender, RoutedEventArgs e)
         {
-            if(!_isPasswordVisible)
+            if (!_isPasswordVisible)
             {
-                if(PasswordInput.Password.Length > 0)
-                {
-                    PasswordErrorText.Visibility = Visibility.Collapsed;
-                }
+                // Оновлюємо властивість у ViewModel, бо Binding не працює для PasswordBox
+                _viewModel.Password = PasswordInput.Password;
             }
         }
 
-        private void PasswordVisible_TextChanged(object sender, RoutedEventArgs e)
+        // Синхронізація TextBox -> PasswordBox (для перемикання "очка")
+        private void PasswordVisible_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (_isPasswordVisible)
             {
-                if (PasswordVisible.Text.Length > 0)
-                {
-                    PasswordErrorText.Visibility = Visibility.Collapsed;
-                }
+                PasswordInput.Password = PasswordVisible.Text;
+                // ViewModel оновлюється автоматично через Binding на TextBox
             }
         }
     }
