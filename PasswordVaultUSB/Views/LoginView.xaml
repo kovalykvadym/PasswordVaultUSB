@@ -5,17 +5,33 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:PasswordVaultUSB.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    Title="Autorization"
+    xmlns:vm="clr-namespace:PasswordVaultUSB.ViewModels"
+    Title="Authorization"
     Width="800"
     Height="600"
     MinWidth="450"
     MinHeight="350"
     Background="{StaticResource BackgroundColor}"
     FontFamily="Segoe UI"
-    KeyDown="Window_KeyDown"
     Style="{StaticResource WindowStyle}"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
+
+    <Window.DataContext>
+        <vm:LoginViewModel />
+    </Window.DataContext>
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </Window.Resources>
+
+    <Window.InputBindings>
+        <KeyBinding
+            Key="Enter"
+            Command="{Binding LoginCommand}"
+            CommandParameter="{Binding ElementName=PasswordInput}" />
+    </Window.InputBindings>
+
     <Grid>
         <Border
             Width="400"
@@ -76,7 +92,8 @@
                             VerticalContentAlignment="Center"
                             Background="Transparent"
                             BorderThickness="0"
-                            FontSize="16" />
+                            FontSize="16"
+                            Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}" />
                     </Border>
                     <TextBlock
                         x:Name="UsernameErrorText"
@@ -84,10 +101,10 @@
                         HorizontalAlignment="Left"
                         FontSize="13"
                         Foreground="#D8000C"
+                        Text="{Binding UsernameError}"
                         TextWrapping="Wrap"
-                        Visibility="Collapsed" />
+                        Visibility="{Binding IsUsernameErrorVisible, Converter={StaticResource BoolToVis}}" />
                 </StackPanel>
-
 
                 <StackPanel Grid.Row="4">
                     <TextBlock
@@ -151,15 +168,17 @@
                         HorizontalAlignment="Left"
                         FontSize="13"
                         Foreground="#D8000C"
+                        Text="{Binding PasswordError}"
                         TextWrapping="Wrap"
-                        Visibility="Collapsed" />
+                        Visibility="{Binding IsPasswordErrorVisible, Converter={StaticResource BoolToVis}}" />
                 </StackPanel>
 
                 <Button
                     Grid.Row="6"
                     Width="200"
                     Height="45"
-                    Click="LoginButton_Click"
+                    Command="{Binding LoginCommand}"
+                    CommandParameter="{Binding ElementName=PasswordInput}"
                     Content="Log in"
                     Style="{StaticResource ModernButtonStyle}" />
 
@@ -169,8 +188,8 @@
                     HorizontalAlignment="Center"
                     Background="Transparent"
                     BorderThickness="0"
-                    Click="GoToRegister_Click"
-                    Content="Don't have an account? Register"
+                    Command="{Binding NavigateToRegisterCommand}"
+                    Content="Don't have an account?&#xA;Register"
                     Cursor="Hand"
                     Foreground="#0078D7" />
             </Grid>

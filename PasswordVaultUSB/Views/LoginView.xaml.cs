@@ -1,117 +1,32 @@
-﻿using PasswordVaultUSB.Models;
-using PasswordVaultUSB.Services;
+﻿using PasswordVaultUSB.ViewModels;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace PasswordVaultUSB.Views
 {
     public partial class LoginView : Window
     {
         private bool _isPasswordVisible = false;
+
         public LoginView()
         {
             InitializeComponent();
-        }
 
-        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
+            // Прив'язуємо ViewModel
+            var viewModel = new LoginViewModel();
+            this.DataContext = viewModel;
+
+            // Дозволяємо ViewModel закрити це вікно
+            if (viewModel.CloseAction == null)
             {
-                LoginButton_Click(sender, e);
+                viewModel.CloseAction = new Action(this.Close);
             }
         }
 
-        private void LoginButton_Click(object sender, RoutedEventArgs e)
-        {
-            ResetErrors();
-
-            string username = UsernameInput.Text.Trim();
-            string password = PasswordInput.Password;
-
-            bool hasError = false;
-
-            if (string.IsNullOrWhiteSpace(username))
-            {
-                UsernameErrorText.Text = "Please enter your username!";
-                UsernameErrorText.Visibility = Visibility.Visible;
-                hasError = true;
-            }
-
-            if (string.IsNullOrEmpty(password))
-            {
-                PasswordErrorText.Text = "Please enter your password!";
-                PasswordErrorText.Visibility = Visibility.Visible;
-                hasError = true;
-            }
-
-            if (hasError)
-            {
-                return;
-            }
-
-            try
-            {
-                string usbPath = UsbDriveService.GetUsbPath();
-
-                if (string.IsNullOrEmpty(usbPath))
-                {
-                    MessageBox.Show("USB drive not found! Please insert your flash drive to create a key.", "USB Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-
-                string vaultPath = UsbDriveService.CreateVaultFolder(usbPath);
-                string userFilePath = System.IO.Path.Combine(vaultPath, $"{username}.dat");
-
-                if (!File.Exists(userFilePath))
-                {
-                    UsernameErrorText.Text = "User not found on this USB drive!";
-                    UsernameErrorText.Visibility = Visibility.Visible;
-                    return;
-                }
-
-                string encryptedContent = File.ReadAllText(userFilePath);
-
-                try
-                {
-                    string json = CryptoService.Decrypt(encryptedContent, password);
-
-                    AppState.CurrentUserFilePath = userFilePath;
-                    AppState.CurrentMasterPassword = password;
-
-                    var mainView = new MainView();
-                    Application.Current.MainWindow = mainView;
-                    mainView.Show();
-                    this.Close();
-                }
-                catch
-                {
-                    PasswordErrorText.Text = "Invalid password!";
-                    PasswordErrorText.Visibility = Visibility.Visible;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Critical error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void ResetErrors()
-        {
-            UsernameErrorText.Visibility = Visibility.Collapsed;
-            PasswordErrorText.Visibility = Visibility.Collapsed;
-        }
+        // --- UI Logic Only (Visual Toggle) ---
+        // Ця логіка залишається тут, бо стосується виключно візуального перемикання контролів
 
         private void TogglePasswordButton_Click(object sender, RoutedEventArgs e)
         {
@@ -121,7 +36,6 @@ namespace PasswordVaultUSB.Views
                 PasswordVisible.Text = PasswordInput.Password;
                 PasswordVisible.Visibility = Visibility.Visible;
                 PasswordInput.Visibility = Visibility.Collapsed;
-
                 EyeIcon.Source = new BitmapImage(new Uri("/Resources/visibility_off.png", UriKind.Relative));
             }
             else
@@ -129,7 +43,6 @@ namespace PasswordVaultUSB.Views
                 PasswordInput.Password = PasswordVisible.Text;
                 PasswordInput.Visibility = Visibility.Visible;
                 PasswordVisible.Visibility = Visibility.Collapsed;
-
                 EyeIcon.Source = new BitmapImage(new Uri("/Resources/visibility.png", UriKind.Relative));
             }
         }
@@ -139,30 +52,16 @@ namespace PasswordVaultUSB.Views
             if (!_isPasswordVisible)
             {
                 PasswordVisible.Text = PasswordInput.Password;
-                if (PasswordErrorText.Visibility == Visibility.Visible)
-                {
-                    PasswordErrorText.Visibility = Visibility.Collapsed;
-                }
+                // Скидання помилки ми тепер робимо у ViewModel, але тут візуальна синхронізація
             }
         }
 
-        private void PasswordVisible_TextChanged(object sender, RoutedEventArgs e)
+        private void PasswordVisible_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (_isPasswordVisible)
             {
                 PasswordInput.Password = PasswordVisible.Text;
-                if (PasswordErrorText.Visibility == Visibility.Visible)
-                {
-                    PasswordErrorText.Visibility = Visibility.Collapsed;
-                }
             }
-        }
-
-        private void GoToRegister_Click(object sender, RoutedEventArgs e)
-        {
-            var registerView = new RegisterView();
-            registerView.Show();
-            this.Close();
         }
     }
 }

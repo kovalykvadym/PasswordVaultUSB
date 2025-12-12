@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PasswordVaultUSB.ViewModels
 {
-    internal class BaseViewModel : INotifyPropertyChanged
+    // Обов'язково public, щоб LoginViewModel міг його наслідувати
+    public class BaseViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -19,7 +16,7 @@ namespace PasswordVaultUSB.ViewModels
 
         protected bool SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
         {
-            if (System.Collections.Generic.EqualityComparer<T>.Default.Equals(field, value))
+            if (EqualityComparer<T>.Default.Equals(field, value))
             {
                 return false;
             }
@@ -27,6 +24,5 @@ namespace PasswordVaultUSB.ViewModels
             OnPropertyChanged(propertyName);
             return true;
         }
-
     }
 }
