@@ -10,6 +10,8 @@
     Height="600"
     MinWidth="700"
     MinHeight="450"
+    PreviewKeyDown="ResetAutoLockTimer"
+    PreviewMouseMove="ResetAutoLockTimer"
     Style="{StaticResource WindowStyle}"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">

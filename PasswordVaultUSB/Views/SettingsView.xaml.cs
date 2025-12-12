@@ -22,6 +22,7 @@ namespace PasswordVaultUSB.Views
     public partial class SettingsView : Window
     {
         public bool SettingsChanged { get; private set; }
+        public Action DataUpdated { get; set; }
 
         public SettingsView()
         {
@@ -154,10 +155,12 @@ namespace PasswordVaultUSB.Views
                         string encrypted = CryptoService.Encrypt(json, AppState.CurrentMasterPassword);
                         File.WriteAllText(AppState.CurrentUserFilePath, encrypted);
 
-                        MessageBox.Show($"Successfully imported {records.Count} password record(s)!\n\nPlease restart the application to see the changes.",
+                        MessageBox.Show($"Successfully imported {records.Count} password record(s)!",
                             "Import Complete", MessageBoxButton.OK, MessageBoxImage.Information);
 
                         SettingsChanged = true;
+
+                        DataUpdated?.Invoke();
                     }
                     else
                     {
@@ -199,10 +202,10 @@ namespace PasswordVaultUSB.Views
                         string encrypted = CryptoService.Encrypt(json, AppState.CurrentMasterPassword);
                         File.WriteAllText(AppState.CurrentUserFilePath, encrypted);
 
-                        MessageBox.Show("All vault data has been cleared.\n\nPlease restart the application.",
-                            "Data Cleared", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show("All vault data has been cleared.", "Data Cleared", MessageBoxButton.OK, MessageBoxImage.Information);
 
                         SettingsChanged = true;
+                        DataUpdated?.Invoke();
                         this.DialogResult = true;
                         this.Close();
                     }

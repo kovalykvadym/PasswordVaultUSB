@@ -50,6 +50,7 @@ namespace PasswordVaultUSB.Views
             SetupMenuButtons();
             LoadData();
             StartUsbMonitoring();
+            StartAutoLockMonitoring();
 
             LogAction("Main window opened - Vault unlocked successfully");
         }
@@ -162,6 +163,8 @@ namespace PasswordVaultUSB.Views
         {
             try
             {
+                Passwords.Clear();
+
                 LogAction("Loading encrypted data from USB drive");
 
                 if (File.Exists(AppState.CurrentUserFilePath))
@@ -228,7 +231,8 @@ namespace PasswordVaultUSB.Views
                 {
                     LogAction("Opening Settings window");
                     var settingsWindow = new SettingsView();
-                    if (settingsWindow.ShowDialog() == true && settingsWindow.SettingsChanged)
+                    settingsWindow.DataUpdated = LoadData;
+                    if (settingsWindow.ShowDialog() == true)
                     {
                         // Застосувати зміни
                         ApplySettings();
@@ -575,6 +579,13 @@ namespace PasswordVaultUSB.Views
                 _usbCheckTimer.Stop();
             }
             base.OnClosed(e);
+        }
+
+        // Додайте цей метод у клас MainView
+        private void ResetAutoLockTimer(object sender, InputEventArgs e)
+        {
+            // Оновлюємо час останньої активності на "зараз"
+            _lastActivityTime = DateTime.Now;
         }
     }
 }
