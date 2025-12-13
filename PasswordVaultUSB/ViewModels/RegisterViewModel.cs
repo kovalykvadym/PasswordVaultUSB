@@ -5,7 +5,9 @@ using PasswordVaultUSB.Services;
 using PasswordVaultUSB.Views;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 
@@ -25,6 +27,9 @@ namespace PasswordVaultUSB.ViewModels
         private bool _isUsernameErrorVisible;
         private bool _isPasswordErrorVisible;
         private bool _isConfPasswordErrorVisible;
+
+        private UsbDriveInfo _selectedUsbDrive;
+        public ObservableCollection<UsbDriveInfo> UsbDrives { get; set; } = new ObservableCollection<UsbDriveInfo>();
 
         // --- Properties ---
         public string Username
@@ -81,35 +86,61 @@ namespace PasswordVaultUSB.ViewModels
             set => SetProperty(ref _isConfPasswordErrorVisible, value);
         }
 
+        public UsbDriveInfo SelectedUsbDrive
+        {
+            get => _selectedUsbDrive;
+            set => SetProperty(ref _selectedUsbDrive, value);
+        }
+
         public Action CloseAction { get; set; }
 
         // --- Commands ---
         public ICommand RegisterCommand { get; }
         public ICommand NavigateToLoginCommand { get; }
 
+        public ICommand RefreshDrivesCommand { get; }
+
         // --- Constructor ---
         public RegisterViewModel()
         {
             RegisterCommand = new RelayCommand(ExecuteRegister);
             NavigateToLoginCommand = new RelayCommand(ExecuteNavigateToLogin);
+
+            RefreshDrivesCommand = new RelayCommand(obj => RefreshDrives());
+            RefreshDrives();
         }
 
         // --- Methods ---
+        private void RefreshDrives()
+        {
+            UsbDrives.Clear();
+            var drives = UsbDriveService.GetAvailableDrives();
+            foreach (var drive in drives) UsbDrives.Add(drive);
+
+            if (UsbDrives.Any()) SelectedUsbDrive = UsbDrives.First();
+            else SelectedUsbDrive = null;
+        }
+
         private void ExecuteRegister(object parameter)
         {
             ResetErrors();
+
+            // Перевірка вибору флешки
+            if (SelectedUsbDrive == null)
+            {
+                MessageBox.Show("Please select a USB drive to store your vault!", "USB Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                RefreshDrives();
+                return;
+            }
 
             if (!ValidateInput()) return;
 
             try
             {
-                string usbPath = UsbDriveService.GetUsbPath();
-                if (string.IsNullOrEmpty(usbPath))
-                {
-                    MessageBox.Show("USB drive not found! Please insert your flash drive.", "USB Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
+                // ВИКОРИСТОВУЄМО SelectedUsbDrive
+                string usbPath = SelectedUsbDrive.RootDirectory;
 
+                string currentHardwareId = UsbDriveService.GetDriveSerialNumber(usbPath);
                 string vaultPath = UsbDriveService.CreateVaultFolder(usbPath);
                 string userFilePath = Path.Combine(vaultPath, $"{Username.Trim()}.dat");
 
@@ -120,10 +151,11 @@ namespace PasswordVaultUSB.ViewModels
                     return;
                 }
 
-                CreateUserFile(userFilePath);
+                CreateUserFile(userFilePath, currentHardwareId);
 
                 AppState.CurrentUserFilePath = userFilePath;
                 AppState.CurrentMasterPassword = Password;
+                AppState.CurrentHardwareID = currentHardwareId;
 
                 MessageBox.Show($"User {Username} registered successfully!", "Success");
                 OpenMainView();
@@ -134,9 +166,14 @@ namespace PasswordVaultUSB.ViewModels
             }
         }
 
-        private void CreateUserFile(string path)
+        private void CreateUserFile(string path, string hardwareId)
         {
-            List<PasswordRecord> initialData = new List<PasswordRecord>();
+            var initialData = new VaultData
+            {
+                HardwareID = hardwareId,
+                Records = new List<PasswordRecord>()
+            };
+
             string json = JsonConvert.SerializeObject(initialData);
             string encryptedContent = CryptoService.Encrypt(json, Password);
             File.WriteAllText(path, encryptedContent);

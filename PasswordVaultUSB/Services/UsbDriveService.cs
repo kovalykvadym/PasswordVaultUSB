@@ -1,16 +1,26 @@
-﻿using System.IO;
+﻿using PasswordVaultUSB.Models;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Management;
 
 namespace PasswordVaultUSB.Services
 {
     public static class UsbDriveService
     {
-        public static string GetUsbPath()
+        public static List<UsbDriveInfo> GetAvailableDrives()
         {
-            var drives = DriveInfo.GetDrives();
-            var usbDrive = drives.FirstOrDefault(d => d.DriveType == DriveType.Removable && d.IsReady);
+            var drives = DriveInfo.GetDrives()
+                .Where(d => d.DriveType == DriveType.Removable && d.IsReady)
+                .Select(d => new UsbDriveInfo
+                {
+                    Name = $"{d.VolumeLabel} ({d.Name})",
+                    RootDirectory = d.RootDirectory.FullName
+                })
+                .ToList();
 
-            return usbDrive?.RootDirectory.FullName;
+            return drives;
         }
 
         public static string CreateVaultFolder(string usbRootPath)
@@ -23,6 +33,27 @@ namespace PasswordVaultUSB.Services
                 di.Attributes = FileAttributes.Directory | FileAttributes.Hidden;
             }
             return folderPath;
+        }
+
+        public static string GetDriveSerialNumber(string drivePath)
+        {
+            try
+            {
+                string driveLetter = Path.GetPathRoot(drivePath).TrimEnd('\\');
+
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher(
+                    $"SELECT VolumeSerialNumber FROM Win32_LogicalDisk WHERE Name = '{driveLetter}'");
+
+                foreach (ManagementObject disk in searcher.Get())
+                {
+                    return disk["VolumeSerialNumber"].ToString();
+                }
+            }
+            catch (Exception)
+            {
+                return "UNKNOWN_ID";
+            }
+            return null;
         }
     }
 }

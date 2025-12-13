@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:PasswordVaultUSB.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
     Title="MainView"
     Width="950"
     Height="650"
@@ -263,6 +264,175 @@
                             </Border>
                         </StackPanel>
                     </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <ScrollViewer
+                x:Name="SettingsPanel"
+                Grid.Row="1"
+                VerticalScrollBarVisibility="Auto"
+                Visibility="Collapsed">
+
+                <StackPanel Margin="0,0,10,0">
+                    <TextBlock Style="{StaticResource CardHeaderStyle}" Text="Application Settings" />
+
+                    <Border Style="{StaticResource DashboardCardStyle}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SubHeaderStyle}" Text="Security" />
+                            <Separator Margin="0,10,0,15" Background="{StaticResource LightBorderBrush}" />
+
+                            <Grid Margin="0,0,0,15">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock
+                                        Margin="0"
+                                        Style="{StaticResource LabelStyle}"
+                                        Text="Auto-lock timeout (minutes)" />
+                                </StackPanel>
+
+                                <ComboBox
+                                    Grid.Column="1"
+                                    Width="120"
+                                    VerticalContentAlignment="Center"
+                                    SelectedValue="{Binding AutoLockTimeout}"
+                                    SelectedValuePath="Tag">
+                                    <ComboBoxItem Content="1 minute">
+                                        <ComboBoxItem.Tag>
+                                            <sys:Int32>1</sys:Int32>
+                                        </ComboBoxItem.Tag>
+                                    </ComboBoxItem>
+                                    <ComboBoxItem Content="5 minutes">
+                                        <ComboBoxItem.Tag>
+                                            <sys:Int32>5</sys:Int32>
+                                        </ComboBoxItem.Tag>
+                                    </ComboBoxItem>
+                                    <ComboBoxItem Content="15 minutes">
+                                        <ComboBoxItem.Tag>
+                                            <sys:Int32>15</sys:Int32>
+                                        </ComboBoxItem.Tag>
+                                    </ComboBoxItem>
+                                    <ComboBoxItem Content="30 minutes">
+                                        <ComboBoxItem.Tag>
+                                            <sys:Int32>30</sys:Int32>
+                                        </ComboBoxItem.Tag>
+                                    </ComboBoxItem>
+                                    <ComboBoxItem Content="Never">
+                                        <ComboBoxItem.Tag>
+                                            <sys:Int32>0</sys:Int32>
+                                        </ComboBoxItem.Tag>
+                                    </ComboBoxItem>
+                                </ComboBox>
+                            </Grid>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock
+                                        Margin="0"
+                                        Style="{StaticResource LabelStyle}"
+                                        Text="USB check interval (seconds)" />
+                                </StackPanel>
+                                <ComboBox
+                                    Grid.Column="1"
+                                    Width="120"
+                                    VerticalContentAlignment="Center"
+                                    SelectedValue="{Binding UsbCheckInterval}"
+                                    SelectedValuePath="Tag">
+                                    <ComboBoxItem Content="1 second">
+                                        <ComboBoxItem.Tag>
+                                            <sys:Int32>1</sys:Int32>
+                                        </ComboBoxItem.Tag>
+                                    </ComboBoxItem>
+                                    <ComboBoxItem Content="3 seconds">
+                                        <ComboBoxItem.Tag>
+                                            <sys:Int32>3</sys:Int32>
+                                        </ComboBoxItem.Tag>
+                                    </ComboBoxItem>
+                                    <ComboBoxItem Content="5 seconds">
+                                        <ComboBoxItem.Tag>
+                                            <sys:Int32>5</sys:Int32>
+                                        </ComboBoxItem.Tag>
+                                    </ComboBoxItem>
+                                    <ComboBoxItem Content="10 seconds">
+                                        <ComboBoxItem.Tag>
+                                            <sys:Int32>10</sys:Int32>
+                                        </ComboBoxItem.Tag>
+                                    </ComboBoxItem>
+                                </ComboBox>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource DashboardCardStyle}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SubHeaderStyle}" Text="Preferences" />
+                            <Separator Margin="0,10,0,15" Background="{StaticResource LightBorderBrush}" />
+
+                            <CheckBox
+                                Margin="0,0,0,15"
+                                Content="Auto-clear clipboard after copying"
+                                IsChecked="{Binding AutoClearClipboard}" />
+                            <CheckBox
+                                Margin="0,0,0,15"
+                                Content="Show password briefly on copy"
+                                IsChecked="{Binding ShowPasswordOnCopy}" />
+                            <CheckBox Content="Confirm before deleting records" IsChecked="{Binding ConfirmDeletions}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource DashboardCardStyle}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SubHeaderStyle}" Text="Data Management" />
+                            <Separator Margin="0,10,0,15" Background="{StaticResource LightBorderBrush}" />
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Button
+                                    Grid.Column="0"
+                                    Margin="0,0,5,0"
+                                    Padding="0,10"
+                                    Command="{Binding ExportCommand}"
+                                    Content="Export JSON"
+                                    Style="{StaticResource ModernButtonStyle}" />
+
+                                <Button
+                                    Grid.Column="1"
+                                    Margin="5,0,5,0"
+                                    Padding="0,10"
+                                    Command="{Binding ImportCommand}"
+                                    Content="Import JSON"
+                                    Style="{StaticResource ModernButtonStyle}" />
+
+                                <Button
+                                    Grid.Column="2"
+                                    Margin="5,0,0,0"
+                                    Padding="0,10"
+                                    Command="{Binding ClearDataCommand}"
+                                    Content="Clear All Data"
+                                    Style="{StaticResource DangerButtonStyle}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Button
+                        Width="150"
+                        Height="40"
+                        HorizontalAlignment="Right"
+                        Command="{Binding SaveSettingsCommand}"
+                        Content="Save Settings"
+                        Style="{StaticResource ModernButtonStyle}" />
                 </StackPanel>
             </ScrollViewer>
 

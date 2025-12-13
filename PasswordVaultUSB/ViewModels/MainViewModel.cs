@@ -1,9 +1,14 @@
-﻿using PasswordVaultUSB.Helpers;
+﻿using Microsoft.Win32;
+using Newtonsoft.Json;
+using PasswordVaultUSB.Helpers;
 using PasswordVaultUSB.Models;
 using PasswordVaultUSB.Services;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Input;
@@ -25,6 +30,17 @@ namespace PasswordVaultUSB.ViewModels
         private string _confirmPasswordInput;
         private string _searchText;
         private bool _isFavoritesOnly;
+
+        // --- NEW: SETTINGS FIELDS ---
+        private int _autoLockTimeout;
+        private int _usbCheckInterval;
+        private bool _autoClearClipboard;
+        private bool _showPasswordOnCopy;
+        private bool _confirmDeletions;
+
+        // Для зберігання попередніх значень (щоб не перезапускати сервіс дарма)
+        private int _originalAutoLockTimeout;
+        private int _originalUsbCheckInterval;
 
         // --- Properties ---
         public ObservableCollection<PasswordRecord> Passwords { get; set; }
@@ -70,12 +86,45 @@ namespace PasswordVaultUSB.ViewModels
             }
         }
 
+        // --- NEW: SETTINGS PROPERTIES ---
+        public int AutoLockTimeout
+        {
+            get => _autoLockTimeout;
+            set => SetProperty(ref _autoLockTimeout, value);
+        }
+        public int UsbCheckInterval
+        {
+            get => _usbCheckInterval;
+            set => SetProperty(ref _usbCheckInterval, value);
+        }
+        public bool AutoClearClipboard
+        {
+            get => _autoClearClipboard;
+            set => SetProperty(ref _autoClearClipboard, value);
+        }
+        public bool ShowPasswordOnCopy
+        {
+            get => _showPasswordOnCopy;
+            set => SetProperty(ref _showPasswordOnCopy, value);
+        }
+        public bool ConfirmDeletions
+        {
+            get => _confirmDeletions;
+            set => SetProperty(ref _confirmDeletions, value);
+        }
+
         // --- Commands ---
         public ICommand DeleteCommand { get; }
         public ICommand ToggleFavoriteCommand { get; }
         public ICommand ChangeMasterPasswordCommand { get; }
         public ICommand CopyPasswordCommand { get; }
         public ICommand LockVaultCommand { get; }
+
+        // --- NEW: SETTINGS COMMANDS ---
+        public ICommand SaveSettingsCommand { get; }
+        public ICommand ExportCommand { get; }
+        public ICommand ImportCommand { get; }
+        public ICommand ClearDataCommand { get; }
 
         // --- Constructor ---
         public MainViewModel()
@@ -95,8 +144,8 @@ namespace PasswordVaultUSB.ViewModels
             _securityService.OnLogAction += LogAction;
             _securityService.OnLockRequested += (reason) =>
             {
-                MessageBox.Show(reason, "Security Alert", MessageBoxButton.OK, MessageBoxImage.Warning);
                 ExecuteLockVault(null);
+                MessageBox.Show(reason, "Security Alert", MessageBoxButton.OK, MessageBoxImage.Warning);
             };
 
             // Init Commands
@@ -106,29 +155,34 @@ namespace PasswordVaultUSB.ViewModels
             CopyPasswordCommand = new RelayCommand(ExecuteCopyPassword);
             LockVaultCommand = new RelayCommand(ExecuteLockVault);
 
-            LogAction("Application started (ViewModel initialized)");
+            // Init Settings Commands
+            SaveSettingsCommand = new RelayCommand(ExecuteSaveSettings);
+            ExportCommand = new RelayCommand(ExecuteExport);
+            ImportCommand = new RelayCommand(ExecuteImport);
+            ClearDataCommand = new RelayCommand(ExecuteClearData);
+
+            LogAction("Application started");
             LoadData();
+
+            // Завантажуємо налаштування в змінні
+            LoadSettingsToProperties();
+
             _securityService.StartMonitoring();
         }
 
-        // --- Data Methods (Load/Save/Update) ---
+        // --- Data Methods ---
         public void LoadData()
         {
             try
             {
                 Passwords.Clear();
-                LogAction("Loading encrypted data...");
+                // LogAction("Loading encrypted data..."); // Трохи зменшимо логування
 
-                var records = _storageService.LoadData(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword);
+                var records = _storageService.LoadData(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword, AppState.CurrentHardwareID);
 
                 if (records.Count > 0)
                 {
                     foreach (var record in records) Passwords.Add(record);
-                    LogAction($"Successfully loaded {records.Count} records");
-                }
-                else
-                {
-                    LogAction("No data found or vault is empty.");
                 }
 
                 _passwordsView.Refresh();
@@ -136,7 +190,6 @@ namespace PasswordVaultUSB.ViewModels
             catch (Exception ex)
             {
                 LogAction($"ERROR loading data: {ex.Message}");
-                MessageBox.Show($"Error loading data: {ex.Message}");
             }
         }
 
@@ -145,8 +198,7 @@ namespace PasswordVaultUSB.ViewModels
             if (string.IsNullOrEmpty(AppState.CurrentUserFilePath)) return;
             try
             {
-                _storageService.SaveData(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword, Passwords);
-                LogAction("Data saved successfully.");
+                _storageService.SaveData(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword, Passwords, AppState.CurrentHardwareID);
             }
             catch (Exception ex)
             {
@@ -173,7 +225,167 @@ namespace PasswordVaultUSB.ViewModels
             }
         }
 
-        // --- Command Methods ---
+        // --- NEW: SETTINGS METHODS ---
+
+        // Викликається при відкритті вкладки налаштувань (ми додамо виклик в CodeBehind)
+        public void LoadSettingsToProperties()
+        {
+            AutoLockTimeout = AppSettings.AutoLockTimeout;
+            UsbCheckInterval = AppSettings.UsbCheckInterval;
+            AutoClearClipboard = AppSettings.AutoClearClipboard;
+            ShowPasswordOnCopy = AppSettings.ShowPasswordOnCopy;
+            ConfirmDeletions = AppSettings.ConfirmDeletions;
+
+            // Запам'ятовуємо, що було на вході
+            _originalAutoLockTimeout = AutoLockTimeout;
+            _originalUsbCheckInterval = UsbCheckInterval;
+        }
+
+        private void ExecuteSaveSettings(object obj)
+        {
+            AppSettings.AutoLockTimeout = AutoLockTimeout;
+            AppSettings.UsbCheckInterval = UsbCheckInterval;
+            AppSettings.AutoClearClipboard = AutoClearClipboard;
+            AppSettings.ShowPasswordOnCopy = ShowPasswordOnCopy;
+            AppSettings.ConfirmDeletions = ConfirmDeletions;
+
+            AppSettings.SaveSettings();
+            LogAction("Settings saved");
+
+            // BUG FIX #3: Перевіряємо, чи змінилися критичні налаштування
+            if (AutoLockTimeout != _originalAutoLockTimeout || UsbCheckInterval != _originalUsbCheckInterval)
+            {
+                _securityService.UpdateSettings();
+                LogAction("Security monitors restarted due to settings change");
+
+                // Оновлюємо оригінальні значення
+                _originalAutoLockTimeout = AutoLockTimeout;
+                _originalUsbCheckInterval = UsbCheckInterval;
+            }
+
+            MessageBox.Show("Settings saved successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void ExecuteExport(object obj)
+        {
+            try
+            {
+                if (!File.Exists(AppState.CurrentUserFilePath))
+                {
+                    MessageBox.Show("No vault data found to export.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                var saveDialog = new SaveFileDialog
+                {
+                    Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
+                    Title = "Export Vault Data",
+                    FileName = $"PVault_Export_{DateTime.Now:yyyyMMdd_HHmmss}.json"
+                };
+
+                if (saveDialog.ShowDialog() == true)
+                {
+                    var records = _storageService.LoadData(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword, AppState.CurrentHardwareID);
+                    string json = JsonConvert.SerializeObject(records, Formatting.Indented);
+                    File.WriteAllText(saveDialog.FileName, json);
+
+                    MessageBox.Show("Vault data exported successfully!\nWARNING: File is NOT encrypted.",
+                        "Export Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                    LogAction("Data exported to JSON");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Export failed: {ex.Message}");
+            }
+        }
+
+        private void ExecuteImport(object obj)
+        {
+            var openDialog = new OpenFileDialog
+            {
+                Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
+                Title = "Import Vault Data"
+            };
+
+            if (openDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    string json = File.ReadAllText(openDialog.FileName);
+                    var importedRecords = JsonConvert.DeserializeObject<List<PasswordRecord>>(json);
+
+                    if (importedRecords == null || importedRecords.Count == 0)
+                    {
+                        MessageBox.Show("File is empty or invalid.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
+
+                    // Оскільки ми вже в MainViewModel, ми можемо працювати з поточною колекцією
+                    // Але краще завантажити актуальний стан з файлу, щоб уникнути конфліктів
+                    var currentRecords = _storageService.LoadData(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword, AppState.CurrentHardwareID);
+
+                    int addedCount = 0;
+                    int skippedCount = 0;
+
+                    foreach (var importRecord in importedRecords)
+                    {
+                        bool exists = currentRecords.Any(r =>
+                            string.Equals(r.Service, importRecord.Service, StringComparison.OrdinalIgnoreCase) &&
+                            string.Equals(r.Login, importRecord.Login, StringComparison.OrdinalIgnoreCase));
+
+                        if (!exists)
+                        {
+                            currentRecords.Add(importRecord);
+                            addedCount++;
+                        }
+                        else
+                        {
+                            skippedCount++;
+                        }
+                    }
+
+                    if (addedCount > 0)
+                    {
+                        _storageService.SaveData(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword, currentRecords, AppState.CurrentHardwareID);
+
+                        // BUG FIX #2: Одразу оновлюємо дані на екрані
+                        LoadData();
+
+                        MessageBox.Show($"Imported: {addedCount}\nSkipped: {skippedCount}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                        LogAction($"Imported {addedCount} records");
+                    }
+                    else
+                    {
+                        MessageBox.Show("No new records found.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Import failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void ExecuteClearData(object obj)
+        {
+            if (MessageBox.Show("Permanently delete ALL passwords?", "Confirm Clear", MessageBoxButton.YesNo, MessageBoxImage.Stop) == MessageBoxResult.Yes)
+            {
+                try
+                {
+                    Passwords.Clear(); // Очищаємо UI
+                    _storageService.SaveData(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword, new List<PasswordRecord>(), AppState.CurrentHardwareID);
+                    MessageBox.Show("All data cleared.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                    LogAction("All data cleared by user");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error: {ex.Message}");
+                }
+            }
+        }
+
+        // --- Existing Commands ---
         private void ExecuteCopyPassword(object parameter)
         {
             if (parameter is PasswordRecord entry)
@@ -185,15 +397,9 @@ namespace PasswordVaultUSB.ViewModels
                 {
                     entry.IsPasswordVisible = true;
                     var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
-                    timer.Tick += (s, args) =>
-                    {
-                        entry.IsPasswordVisible = false;
-                        timer.Stop();
-                    };
+                    timer.Tick += (s, args) => { entry.IsPasswordVisible = false; timer.Stop(); };
                     timer.Start();
                 }
-
-                MessageBox.Show($"Password for {entry.Service} copied.", "Copied", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -203,7 +409,7 @@ namespace PasswordVaultUSB.ViewModels
             {
                 if (AppSettings.ConfirmDeletions)
                 {
-                    if (MessageBox.Show($"Delete '{entry.Service}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                    if (MessageBox.Show($"Delete '{entry.Service}'?", "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                         return;
                 }
 
@@ -219,46 +425,35 @@ namespace PasswordVaultUSB.ViewModels
             {
                 entry.IsFavorite = !entry.IsFavorite;
                 SaveData();
-                LogAction($"Favorite toggled for '{entry.Service}'");
             }
         }
 
         private void ExecuteChangeMasterPassword(object obj)
         {
-            if (string.IsNullOrWhiteSpace(CurrentPasswordInput) ||
-                string.IsNullOrWhiteSpace(NewPasswordInput) ||
-                string.IsNullOrWhiteSpace(ConfirmPasswordInput))
+            if (string.IsNullOrWhiteSpace(CurrentPasswordInput) || string.IsNullOrWhiteSpace(NewPasswordInput) || string.IsNullOrWhiteSpace(ConfirmPasswordInput))
             {
-                MessageBox.Show("Please fill all fields.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                MessageBox.Show("Please fill all fields."); return;
             }
-
             if (CurrentPasswordInput != AppState.CurrentMasterPassword)
             {
-                MessageBox.Show("Current password incorrect.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                MessageBox.Show("Current password incorrect."); return;
             }
-
             if (NewPasswordInput != ConfirmPasswordInput)
             {
-                MessageBox.Show("New passwords do not match.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                MessageBox.Show("New passwords do not match."); return;
             }
 
             try
             {
-                _storageService.SaveData(AppState.CurrentUserFilePath, NewPasswordInput, Passwords);
+                _storageService.SaveData(AppState.CurrentUserFilePath, NewPasswordInput, Passwords, AppState.CurrentHardwareID);
                 AppState.CurrentMasterPassword = NewPasswordInput;
-
-                LogAction("SUCCESS: Master password updated.");
-                MessageBox.Show("Master password updated!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-
+                LogAction("Master password updated.");
+                MessageBox.Show("Master password updated!");
                 CurrentPasswordInput = NewPasswordInput = ConfirmPasswordInput = string.Empty;
             }
             catch (Exception ex)
             {
-                LogAction($"ERROR: Failed to update password - {ex.Message}");
-                MessageBox.Show($"Failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Failed: {ex.Message}");
             }
         }
 
@@ -267,11 +462,10 @@ namespace PasswordVaultUSB.ViewModels
             _securityService.StopMonitoring();
             AppState.CurrentMasterPassword = null;
             AppState.CurrentUserFilePath = null;
-            LogAction("Vault locked manually.");
+            LogAction("Vault locked.");
             RequestLockView?.Invoke();
         }
 
-        // --- Helpers & Filtering ---
         public void LogAction(string message)
         {
             var timestamp = DateTime.Now.ToString("HH:mm:ss");
@@ -287,23 +481,15 @@ namespace PasswordVaultUSB.ViewModels
             if (item is PasswordRecord entry)
             {
                 if (IsFavoritesOnly && !entry.IsFavorite) return false;
-
                 if (string.IsNullOrWhiteSpace(SearchText)) return true;
-
                 var search = SearchText.ToLower();
-                return (entry.Service?.ToLower().Contains(search) ?? false)
-                    || (entry.Login?.ToLower().Contains(search) ?? false)
-                    || (entry.Url?.ToLower().Contains(search) ?? false);
+                return (entry.Service?.ToLower().Contains(search) ?? false) ||
+                       (entry.Login?.ToLower().Contains(search) ?? false) ||
+                       (entry.Url?.ToLower().Contains(search) ?? false);
             }
             return false;
         }
 
         public void NotifyUserActivity() => _securityService.ResetAutoLockTimer();
-
-        public void RefreshSettings()
-        {
-            LoadData();
-            _securityService.UpdateSettings();
-        }
     }
 }

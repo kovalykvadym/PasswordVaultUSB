@@ -8,7 +8,7 @@ namespace PasswordVaultUSB.Services
 {
     public class StorageService
     {
-        public List<PasswordRecord> LoadData(string filePath, string password)
+        public List<PasswordRecord> LoadData(string filePath, string password, string currentHardwareId)
         {
             if (!File.Exists(filePath))
             {
@@ -20,8 +20,16 @@ namespace PasswordVaultUSB.Services
                 string encryptedJson = File.ReadAllText(filePath);
                 string json = CryptoService.Decrypt(encryptedJson, password);
 
-                var records = JsonConvert.DeserializeObject<List<PasswordRecord>>(json);
-                return records ?? new List<PasswordRecord>();
+                var vaultData = JsonConvert.DeserializeObject<VaultData>(json);
+
+                if (vaultData == null) return new List<PasswordRecord>();
+
+                if (vaultData.HardwareID != currentHardwareId)
+                {
+                    throw new UnauthorizedAccessException("Hardware Mismatch! This file belongs to another USB drive.");
+                }
+
+                return vaultData.Records ?? new List<PasswordRecord>();
             }
             catch (Exception)
             {
@@ -29,11 +37,17 @@ namespace PasswordVaultUSB.Services
             }
         }
 
-        public void SaveData(string filePath, string password, IEnumerable<PasswordRecord> records)
+        public void SaveData(string filePath, string password, IEnumerable<PasswordRecord> records, string currentHardwareId)
         {
             try
             {
-                string json = JsonConvert.SerializeObject(records);
+                var dataToSave = new VaultData
+                {
+                    HardwareID = currentHardwareId,
+                    Records = new List<PasswordRecord>(records)
+                };
+
+                string json = JsonConvert.SerializeObject(dataToSave);
                 string encryptedJson = CryptoService.Encrypt(json, password);
 
                 File.WriteAllText(filePath, encryptedJson);

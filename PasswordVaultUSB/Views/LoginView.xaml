@@ -52,6 +52,44 @@
                 </StackPanel>
 
                 <StackPanel Margin="0,0,0,15">
+                    <TextBlock Style="{StaticResource LabelStyle}" Text="Select USB Key" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Style="{StaticResource InputBorderStyle}">
+                            <ComboBox
+                                Height="38"
+                                Padding="10,0"
+                                VerticalContentAlignment="Center"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                DisplayMemberPath="Name"
+                                FontSize="14"
+                                ItemsSource="{Binding UsbDrives}"
+                                SelectedItem="{Binding SelectedUsbDrive}" />
+                        </Border>
+
+                        <Button
+                            Grid.Column="1"
+                            Width="40"
+                            Height="40"
+                            Margin="5,0,0,0"
+                            Command="{Binding RefreshDrivesCommand}"
+                            Style="{StaticResource IconButtonStyle}"
+                            ToolTip="Refresh Drives">
+                            <TextBlock
+                                FontSize="20"
+                                FontWeight="Bold"
+                                Foreground="{StaticResource AccentBrush}"
+                                Text="↻" />
+                        </Button>
+                    </Grid>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,0,15">
                     <TextBlock Style="{StaticResource LabelStyle}" Text="Username" />
                     <Border Style="{StaticResource InputBorderStyle}">
                         <TextBox

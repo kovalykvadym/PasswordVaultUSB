@@ -3,7 +3,9 @@ using PasswordVaultUSB.Models;
 using PasswordVaultUSB.Services;
 using PasswordVaultUSB.Views;
 using System;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Input;
 
@@ -18,61 +20,57 @@ namespace PasswordVaultUSB.ViewModels
         private string _passwordError;
         private bool _isUsernameErrorVisible;
         private bool _isPasswordErrorVisible;
+        private UsbDriveInfo _selectedUsbDrive;
+        private int _failedAttempts = 0;
 
         // --- Properties ---
         public string Username
         {
             get => _username;
-            set
-            {
-                if (SetProperty(ref _username, value)) IsUsernameErrorVisible = false;
-            }
+            set { if (SetProperty(ref _username, value)) IsUsernameErrorVisible = false; }
         }
 
         public string Password
         {
             get => _password;
-            set
-            {
-                if (SetProperty(ref _password, value)) IsPasswordErrorVisible = false;
-            }
+            set { if (SetProperty(ref _password, value)) IsPasswordErrorVisible = false; }
         }
 
-        public string UsernameError
-        {
-            get => _usernameError;
-            set => SetProperty(ref _usernameError, value);
-        }
-
-        public bool IsUsernameErrorVisible
-        {
-            get => _isUsernameErrorVisible;
-            set => SetProperty(ref _isUsernameErrorVisible, value);
-        }
-
-        public string PasswordError
-        {
-            get => _passwordError;
-            set => SetProperty(ref _passwordError, value);
-        }
-
-        public bool IsPasswordErrorVisible
-        {
-            get => _isPasswordErrorVisible;
-            set => SetProperty(ref _isPasswordErrorVisible, value);
-        }
+        public string UsernameError { get => _usernameError; set => SetProperty(ref _usernameError, value); }
+        public bool IsUsernameErrorVisible { get => _isUsernameErrorVisible; set => SetProperty(ref _isUsernameErrorVisible, value); }
+        public string PasswordError { get => _passwordError; set => SetProperty(ref _passwordError, value); }
+        public bool IsPasswordErrorVisible { get => _isPasswordErrorVisible; set => SetProperty(ref _isPasswordErrorVisible, value); }
 
         public Action CloseAction { get; set; }
+        public ObservableCollection<UsbDriveInfo> UsbDrives { get; set; } = new ObservableCollection<UsbDriveInfo>();
+
+        public UsbDriveInfo SelectedUsbDrive
+        {
+            get => _selectedUsbDrive;
+            set => SetProperty(ref _selectedUsbDrive, value);
+        }
 
         // --- Commands ---
         public ICommand LoginCommand { get; }
         public ICommand NavigateToRegisterCommand { get; }
+        public ICommand RefreshDrivesCommand { get; }
 
         // --- Constructor ---
         public LoginViewModel()
         {
             LoginCommand = new RelayCommand(ExecuteLogin);
             NavigateToRegisterCommand = new RelayCommand(ExecuteNavigateToRegister);
+            RefreshDrivesCommand = new RelayCommand(obj => RefreshDrives());
+            RefreshDrives();
+        }
+
+        private void RefreshDrives()
+        {
+            UsbDrives.Clear();
+            var drives = UsbDriveService.GetAvailableDrives();
+            foreach (var drive in drives) UsbDrives.Add(drive);
+            if (UsbDrives.Any()) SelectedUsbDrive = UsbDrives.First();
+            else SelectedUsbDrive = null;
         }
 
         // --- Methods ---
@@ -80,17 +78,19 @@ namespace PasswordVaultUSB.ViewModels
         {
             ResetErrors();
 
+            if (SelectedUsbDrive == null)
+            {
+                ShowError("Please select a USB drive!");
+                RefreshDrives();
+                return;
+            }
+
             if (!ValidateInput()) return;
 
             try
             {
-                string usbPath = UsbDriveService.GetUsbPath();
-                if (string.IsNullOrEmpty(usbPath))
-                {
-                    ShowError("USB drive not found! Please insert your flash drive.");
-                    return;
-                }
-
+                string usbPath = SelectedUsbDrive.RootDirectory;
+                string currentHardwareId = UsbDriveService.GetDriveSerialNumber(usbPath);
                 string vaultPath = UsbDriveService.CreateVaultFolder(usbPath);
                 string userFilePath = Path.Combine(vaultPath, $"{Username.Trim()}.dat");
 
@@ -101,26 +101,50 @@ namespace PasswordVaultUSB.ViewModels
                     return;
                 }
 
-                string encryptedContent = File.ReadAllText(userFilePath);
-
                 try
                 {
-                    string json = CryptoService.Decrypt(encryptedContent, Password);
+                    // Цей рядок кине помилку, якщо пароль невірний
+                    var dummyLoad = new StorageService().LoadData(userFilePath, Password, currentHardwareId);
 
+                    // --- УСПІХ ---
+                    _failedAttempts = 0; // Скидаємо лічильник при успішному вході
                     AppState.CurrentUserFilePath = userFilePath;
                     AppState.CurrentMasterPassword = Password;
+                    AppState.CurrentHardwareID = currentHardwareId;
 
                     OpenMainView();
                 }
+                catch (UnauthorizedAccessException ex)
+                {
+                    // Це помилка Hardware Lock (не та флешка)
+                    ShowError($"Security Alert: {ex.Message}");
+                }
                 catch
                 {
+                    // --- ПОМИЛКА ПАРОЛЯ ---
+                    // Викликаємо логіку фотографування
+                    HandleFailedAttempt(usbPath);
+
                     PasswordError = "Invalid password!";
                     IsPasswordErrorVisible = true;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                ShowError($"Critical error: {ex.Message}");
+                PasswordError = "Error accessing USB drive!";
+                IsPasswordErrorVisible = true;
+            }
+        }
+
+        private void HandleFailedAttempt(string usbRootPath)
+        {
+            _failedAttempts++;
+
+            if (_failedAttempts >= 3)
+            {
+                string vaultPath = UsbDriveService.CreateVaultFolder(usbRootPath);
+
+                WebcamService.CaptureIntruder(vaultPath);
             }
         }
 
@@ -140,21 +164,18 @@ namespace PasswordVaultUSB.ViewModels
         private bool ValidateInput()
         {
             bool isValid = true;
-
             if (string.IsNullOrWhiteSpace(Username))
             {
                 UsernameError = "Please enter your username!";
                 IsUsernameErrorVisible = true;
                 isValid = false;
             }
-
             if (string.IsNullOrEmpty(Password))
             {
                 PasswordError = "Please enter your password!";
                 IsPasswordErrorVisible = true;
                 isValid = false;
             }
-
             return isValid;
         }
 

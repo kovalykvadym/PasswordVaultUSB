@@ -44,7 +44,21 @@ namespace PasswordVaultUSB.Views
             {
                 var loginView = new LoginView();
                 loginView.Show();
-                this.Close();
+
+                var windowsToClose = new List<Window>();
+
+                foreach (Window window in Application.Current.Windows)
+                {
+                    if (window != loginView)
+                    {
+                        windowsToClose.Add(window);
+                    }
+                }
+
+                foreach (var window in windowsToClose)
+                {
+                    window.Close();
+                }
             };
 
             PasswordsGrid.ItemsSource = _viewModel.Passwords;
@@ -61,21 +75,34 @@ namespace PasswordVaultUSB.Views
         {
             if (sender is Button clickedButton)
             {
-                if (clickedButton == SettingsButton)
-                {
-                    var settingsWindow = new SettingsView();
-                    if (settingsWindow.ShowDialog() == true)
-                    {
-                        _viewModel.RefreshSettings();
-                    }
-                    return;
-                }
-
                 SetActiveMenuButton(clickedButton);
+
                 _viewModel.IsFavoritesOnly = (clickedButton == FavoritesButton);
 
-                bool showChangePassword = clickedButton == UsbButton;
-                ToggleChangePasswordPanel(showChangePassword);
+                bool showUsbPanel = (clickedButton == UsbButton);
+                bool showSettingsPanel = (clickedButton == SettingsButton);
+
+                if (showSettingsPanel)
+                {
+                    _viewModel.LoadSettingsToProperties();
+                }
+
+                TogglePanels(showUsbPanel, showSettingsPanel);
+            }
+        }
+
+        private void TogglePanels(bool showUsb, bool showSettings)
+        {
+            ChangePasswordPanel.Visibility = showUsb ? Visibility.Visible : Visibility.Collapsed;
+
+            SettingsPanel.Visibility = showSettings ? Visibility.Visible : Visibility.Collapsed;
+
+            bool showMainContent = !showUsb && !showSettings;
+
+            PasswordsGrid.Visibility = showMainContent ? Visibility.Visible : Visibility.Collapsed;
+            if (HeaderGrid != null)
+            {
+                HeaderGrid.Visibility = showMainContent ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -91,20 +118,6 @@ namespace PasswordVaultUSB.Views
             {
                 activeButton.Background = _activeBackground;
                 activeButton.Foreground = _activeForeground;
-            }
-        }
-
-        private void ToggleChangePasswordPanel(bool show)
-        {
-            ChangePasswordPanel.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
-            PasswordsGrid.Visibility = show ? Visibility.Collapsed : Visibility.Visible;
-            if (HeaderGrid != null)
-            {
-                HeaderGrid.Visibility = show ? Visibility.Collapsed : Visibility.Visible;
-            }
-            if (show)
-            {
-                LogAction("Opened master password change panel");
             }
         }
 
