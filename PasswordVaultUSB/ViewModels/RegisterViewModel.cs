@@ -1,8 +1,8 @@
-﻿using PasswordVaultUSB.Helpers;
+﻿using Newtonsoft.Json;
+using PasswordVaultUSB.Helpers;
 using PasswordVaultUSB.Models;
 using PasswordVaultUSB.Services;
 using PasswordVaultUSB.Views;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,55 +13,36 @@ namespace PasswordVaultUSB.ViewModels
 {
     public class RegisterViewModel : BaseViewModel
     {
+        // --- Private Fields ---
         private string _username;
-        private string _password; // 1. Нова властивість
-        private string _confirmPassword; // 1. Нова властивість
+        private string _password;
+        private string _confirmPassword;
 
         private string _usernameError;
         private string _passwordError;
         private string _confPasswordError;
+
         private bool _isUsernameErrorVisible;
         private bool _isPasswordErrorVisible;
         private bool _isConfPasswordErrorVisible;
 
-        // --- Властивості ---
-
+        // --- Properties ---
         public string Username
         {
             get => _username;
-            set
-            {
-                if (SetProperty(ref _username, value))
-                {
-                    IsUsernameErrorVisible = false;
-                }
-            }
+            set { if (SetProperty(ref _username, value)) IsUsernameErrorVisible = false; }
         }
 
-        // 2. Властивість для першого пароля
         public string Password
         {
             get => _password;
-            set
-            {
-                if (SetProperty(ref _password, value))
-                {
-                    IsPasswordErrorVisible = false;
-                }
-            }
+            set { if (SetProperty(ref _password, value)) IsPasswordErrorVisible = false; }
         }
 
-        // 2. Властивість для підтвердження пароля
         public string ConfirmPassword
         {
             get => _confirmPassword;
-            set
-            {
-                if (SetProperty(ref _confirmPassword, value))
-                {
-                    IsConfPasswordErrorVisible = false;
-                }
-            }
+            set { if (SetProperty(ref _confirmPassword, value)) IsConfPasswordErrorVisible = false; }
         }
 
         public string UsernameError
@@ -100,67 +81,32 @@ namespace PasswordVaultUSB.ViewModels
             set => SetProperty(ref _isConfPasswordErrorVisible, value);
         }
 
-        // --- Команди ---
+        public Action CloseAction { get; set; }
+
+        // --- Commands ---
         public ICommand RegisterCommand { get; }
         public ICommand NavigateToLoginCommand { get; }
 
-        public Action CloseAction { get; set; }
-
+        // --- Constructor ---
         public RegisterViewModel()
         {
             RegisterCommand = new RelayCommand(ExecuteRegister);
             NavigateToLoginCommand = new RelayCommand(ExecuteNavigateToLogin);
         }
 
+        // --- Methods ---
         private void ExecuteRegister(object parameter)
         {
-            // Скидаємо помилки
-            IsUsernameErrorVisible = false;
-            IsPasswordErrorVisible = false;
-            IsConfPasswordErrorVisible = false;
+            ResetErrors();
 
-            // 3. Більше не шукаємо елементи UI! Беремо значення з властивостей.
-            string password = Password;
-            string confirm = ConfirmPassword;
-
-            bool hasError = false;
-
-            if (string.IsNullOrWhiteSpace(Username))
-            {
-                UsernameError = "Username is required";
-                IsUsernameErrorVisible = true;
-                hasError = true;
-            }
-
-            if (string.IsNullOrWhiteSpace(password))
-            {
-                PasswordError = "Password is required";
-                IsPasswordErrorVisible = true;
-                hasError = true;
-            }
-
-            if (string.IsNullOrWhiteSpace(confirm))
-            {
-                ConfPasswordError = "Please repeat your password";
-                IsConfPasswordErrorVisible = true;
-                hasError = true;
-            }
-            else if (password != confirm)
-            {
-                ConfPasswordError = "Passwords do not match";
-                IsConfPasswordErrorVisible = true;
-                hasError = true;
-            }
-
-            if (hasError) return;
+            if (!ValidateInput()) return;
 
             try
             {
                 string usbPath = UsbDriveService.GetUsbPath();
-
                 if (string.IsNullOrEmpty(usbPath))
                 {
-                    MessageBox.Show("USB drive not found! Please insert your flash drive to create a key.", "USB Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("USB drive not found! Please insert your flash drive.", "USB Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
 
@@ -174,24 +120,13 @@ namespace PasswordVaultUSB.ViewModels
                     return;
                 }
 
-                // Створення нового користувача
-                List<PasswordRecord> initialData = new List<PasswordRecord>();
-                string json = JsonConvert.SerializeObject(initialData);
-                string encryptedContent = CryptoService.Encrypt(json, password);
+                CreateUserFile(userFilePath);
 
-                File.WriteAllText(userFilePath, encryptedContent);
-
-                // Вхід в систему
                 AppState.CurrentUserFilePath = userFilePath;
-                AppState.CurrentMasterPassword = password;
+                AppState.CurrentMasterPassword = Password;
 
-                MessageBox.Show($"User {Username} registered successfully on drive {usbPath}!", "Success");
-
-                var mainView = new MainView();
-                Application.Current.MainWindow = mainView;
-                mainView.Show();
-
-                CloseAction?.Invoke();
+                MessageBox.Show($"User {Username} registered successfully!", "Success");
+                OpenMainView();
             }
             catch (Exception ex)
             {
@@ -199,11 +134,68 @@ namespace PasswordVaultUSB.ViewModels
             }
         }
 
+        private void CreateUserFile(string path)
+        {
+            List<PasswordRecord> initialData = new List<PasswordRecord>();
+            string json = JsonConvert.SerializeObject(initialData);
+            string encryptedContent = CryptoService.Encrypt(json, Password);
+            File.WriteAllText(path, encryptedContent);
+        }
+
+        private bool ValidateInput()
+        {
+            bool isValid = true;
+
+            if (string.IsNullOrWhiteSpace(Username))
+            {
+                UsernameError = "Username is required";
+                IsUsernameErrorVisible = true;
+                isValid = false;
+            }
+
+            if (string.IsNullOrWhiteSpace(Password))
+            {
+                PasswordError = "Password is required";
+                IsPasswordErrorVisible = true;
+                isValid = false;
+            }
+
+            if (string.IsNullOrWhiteSpace(ConfirmPassword))
+            {
+                ConfPasswordError = "Please repeat your password";
+                IsConfPasswordErrorVisible = true;
+                isValid = false;
+            }
+            else if (Password != ConfirmPassword)
+            {
+                ConfPasswordError = "Passwords do not match";
+                IsConfPasswordErrorVisible = true;
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
         private void ExecuteNavigateToLogin(object obj)
         {
             var loginView = new LoginView();
             loginView.Show();
             CloseAction?.Invoke();
+        }
+
+        private void OpenMainView()
+        {
+            var mainView = new MainView();
+            Application.Current.MainWindow = mainView;
+            mainView.Show();
+            CloseAction?.Invoke();
+        }
+
+        private void ResetErrors()
+        {
+            IsUsernameErrorVisible = false;
+            IsPasswordErrorVisible = false;
+            IsConfPasswordErrorVisible = false;
         }
     }
 }

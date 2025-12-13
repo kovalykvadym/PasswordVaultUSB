@@ -7,51 +7,37 @@ namespace PasswordVaultUSB.ViewModels
 {
     public class AddPasswordViewModel : BaseViewModel
     {
+        // --- Private Fields ---
         private string _service;
         private string _login;
         private string _password;
         private string _url;
         private string _notes;
 
-        // Поля для помилок
         private bool _isServiceErrorVisible;
         private bool _isLoginErrorVisible;
         private bool _isPasswordErrorVisible;
 
-        // Заголовки
+        // --- Properties ---
         public string WindowTitle { get; private set; }
         public string ButtonText { get; private set; }
-
-        // --- Властивості ---
 
         public string Service
         {
             get => _service;
-            set
-            {
-                if (SetProperty(ref _service, value))
-                    IsServiceErrorVisible = false;
-            }
+            set { if (SetProperty(ref _service, value)) IsServiceErrorVisible = false; }
         }
 
         public string Login
         {
             get => _login;
-            set
-            {
-                if (SetProperty(ref _login, value))
-                    IsLoginErrorVisible = false;
-            }
+            set { if (SetProperty(ref _login, value)) IsLoginErrorVisible = false; }
         }
 
         public string Password
         {
             get => _password;
-            set
-            {
-                if (SetProperty(ref _password, value))
-                    IsPasswordErrorVisible = false;
-            }
+            set { if (SetProperty(ref _password, value)) IsPasswordErrorVisible = false; }
         }
 
         public string Url
@@ -66,8 +52,7 @@ namespace PasswordVaultUSB.ViewModels
             set => SetProperty(ref _notes, value);
         }
 
-        // --- Видимість помилок ---
-
+        // Visibility
         public bool IsServiceErrorVisible
         {
             get => _isServiceErrorVisible;
@@ -86,13 +71,13 @@ namespace PasswordVaultUSB.ViewModels
             set => SetProperty(ref _isPasswordErrorVisible, value);
         }
 
-        // --- Команди та Події ---
+        public Action<bool> CloseAction { get; set; }
 
+        // --- Commands ---
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
 
-        public Action<bool> CloseAction { get; set; }
-
+        // --- Constructor ---
         public AddPasswordViewModel(PasswordRecord recordToEdit = null)
         {
             SaveCommand = new RelayCommand(ExecuteSave);
@@ -116,37 +101,40 @@ namespace PasswordVaultUSB.ViewModels
             }
         }
 
+        // --- Methods ---
         private void ExecuteSave(object obj)
         {
-            bool hasError = false;
+            if (!ValidateInput()) return;
+            CloseAction?.Invoke(true);
+        }
+
+        private bool ValidateInput()
+        {
+            bool isValid = true;
 
             if (string.IsNullOrWhiteSpace(Service))
             {
                 IsServiceErrorVisible = true;
-                hasError = true;
+                isValid = false;
             }
 
             if (string.IsNullOrWhiteSpace(Login))
             {
                 IsLoginErrorVisible = true;
-                hasError = true;
+                isValid = false;
             }
 
             if (string.IsNullOrWhiteSpace(Password))
             {
                 IsPasswordErrorVisible = true;
-                hasError = true;
+                isValid = false;
             }
 
-            if (hasError) return;
-
-            // Успіх -> закриваємо з результатом true
-            CloseAction?.Invoke(true);
+            return isValid;
         }
 
         private void ExecuteCancel(object obj)
         {
-            // Скасування -> закриваємо з результатом false
             CloseAction?.Invoke(false);
         }
     }

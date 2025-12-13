@@ -1,49 +1,36 @@
-﻿using Newtonsoft.Json;
-using PasswordVaultUSB.Helpers;
+﻿using PasswordVaultUSB.Helpers;
 using PasswordVaultUSB.Models;
 using PasswordVaultUSB.Services;
 using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Threading;
-using System.ComponentModel;
-using System.Windows.Data;
 
 namespace PasswordVaultUSB.ViewModels
 {
     public class MainViewModel : BaseViewModel
     {
-        // Колекції
-        private readonly SecurityService _securityService;
-
-        public Action RequestLockView { get; set; }
-
-        // Команда для ручного блокування
-        public ICommand LockVaultCommand { get; }
-
-        public ObservableCollection<PasswordRecord> Passwords { get; set; }
-        public ObservableCollection<string> ActivityLog { get; set; }
-
-        // Команди
-        public ICommand DeleteCommand { get; }
-        public ICommand ToggleFavoriteCommand { get; }
-        public ICommand ChangeMasterPasswordCommand { get; }
-        public ICommand CopyPasswordCommand { get; }
-
-        // Сервіси
+        // --- Private Fields & Services ---
         private readonly StorageService _storageService;
         private readonly ClipboardService _clipboardService;
-
-        // --- Властивості для зміни пароля ---
-        private string _currentPasswordInput;
-        private string _newPasswordInput;
-        private string _confirmPasswordInput;
+        private readonly SecurityService _securityService;
 
         private ICollectionView _passwordsView;
 
+        private string _currentPasswordInput;
+        private string _newPasswordInput;
+        private string _confirmPasswordInput;
         private string _searchText;
         private bool _isFavoritesOnly;
+
+        // --- Properties ---
+        public ObservableCollection<PasswordRecord> Passwords { get; set; }
+        public ObservableCollection<string> ActivityLog { get; set; }
+
+        public Action RequestLockView { get; set; }
 
         public string CurrentPasswordInput
         {
@@ -69,9 +56,7 @@ namespace PasswordVaultUSB.ViewModels
             set
             {
                 if (SetProperty(ref _searchText, value))
-                {
                     _passwordsView.Refresh();
-                }
             }
         }
 
@@ -81,12 +66,18 @@ namespace PasswordVaultUSB.ViewModels
             set
             {
                 if (SetProperty(ref _isFavoritesOnly, value))
-                {
                     _passwordsView.Refresh();
-                }
             }
         }
 
+        // --- Commands ---
+        public ICommand DeleteCommand { get; }
+        public ICommand ToggleFavoriteCommand { get; }
+        public ICommand ChangeMasterPasswordCommand { get; }
+        public ICommand CopyPasswordCommand { get; }
+        public ICommand LockVaultCommand { get; }
+
+        // --- Constructor ---
         public MainViewModel()
         {
             Passwords = new ObservableCollection<PasswordRecord>();
@@ -95,9 +86,12 @@ namespace PasswordVaultUSB.ViewModels
             _storageService = new StorageService();
             _clipboardService = new ClipboardService();
             _securityService = new SecurityService();
+
+            // Setup CollectionView for filtering
             _passwordsView = CollectionViewSource.GetDefaultView(Passwords);
             _passwordsView.Filter = FilterRecords;
 
+            // Security Events
             _securityService.OnLogAction += LogAction;
             _securityService.OnLockRequested += (reason) =>
             {
@@ -105,7 +99,7 @@ namespace PasswordVaultUSB.ViewModels
                 ExecuteLockVault(null);
             };
 
-            // Ініціалізація команд
+            // Init Commands
             DeleteCommand = new RelayCommand(DeletePassword);
             ToggleFavoriteCommand = new RelayCommand(ToggleFavorite);
             ChangeMasterPasswordCommand = new RelayCommand(ExecuteChangeMasterPassword);
@@ -117,22 +111,27 @@ namespace PasswordVaultUSB.ViewModels
             _securityService.StartMonitoring();
         }
 
+        // --- Data Methods (Load/Save/Update) ---
         public void LoadData()
         {
             try
             {
                 Passwords.Clear();
                 LogAction("Loading encrypted data...");
+
                 var records = _storageService.LoadData(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword);
+
                 if (records.Count > 0)
                 {
                     foreach (var record in records) Passwords.Add(record);
                     LogAction($"Successfully loaded {records.Count} records");
                 }
-                else LogAction("No data found or vault is empty.");
+                else
+                {
+                    LogAction("No data found or vault is empty.");
+                }
 
-                _passwordsView = CollectionViewSource.GetDefaultView(Passwords);
-                _passwordsView.Filter = FilterRecords;
+                _passwordsView.Refresh();
             }
             catch (Exception ex)
             {
@@ -155,25 +154,36 @@ namespace PasswordVaultUSB.ViewModels
                 MessageBox.Show($"Error saving data: {ex.Message}");
             }
         }
-        // ... [Кінець LoadData/SaveData] ...
 
+        public void AddNewRecord(PasswordRecord newRecord)
+        {
+            Passwords.Add(newRecord);
+            SaveData();
+            LogAction($"NEW ENTRY: Added password for '{newRecord.Service}'");
+        }
 
-        // --- МЕТОДИ КОМАНД ---
+        public void UpdateRecord(PasswordRecord oldRecord, PasswordRecord newRecord)
+        {
+            int index = Passwords.IndexOf(oldRecord);
+            if (index != -1)
+            {
+                Passwords[index] = newRecord;
+                SaveData();
+                LogAction($"UPDATED: Edited password entry for '{newRecord.Service}'");
+            }
+        }
 
+        // --- Command Methods ---
         private void ExecuteCopyPassword(object parameter)
         {
             if (parameter is PasswordRecord entry)
             {
-                // 1. Копіюємо через сервіс
                 _clipboardService.CopyToClipboard(entry.Password, AppSettings.AutoClearClipboard);
                 LogAction($"CLIPBOARD: Copied password for '{entry.Service}'");
 
-                // 2. Логіка короткочасного показу пароля (візуальний ефект)
                 if (AppSettings.ShowPasswordOnCopy && !entry.IsPasswordVisible)
                 {
                     entry.IsPasswordVisible = true;
-
-                    // Таймер для приховування
                     var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
                     timer.Tick += (s, args) =>
                     {
@@ -183,7 +193,7 @@ namespace PasswordVaultUSB.ViewModels
                     timer.Start();
                 }
 
-                MessageBox.Show($"Password for {entry.Service} copied to clipboard", "Copied", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"Password for {entry.Service} copied.", "Copied", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
@@ -191,13 +201,10 @@ namespace PasswordVaultUSB.ViewModels
         {
             if (parameter is PasswordRecord entry)
             {
-                // Перевірка налаштування "Confirm Deletions"
                 if (AppSettings.ConfirmDeletions)
                 {
-                    var result = MessageBox.Show($"Are you sure you want to delete '{entry.Service}'?",
-                        "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-                    if (result != MessageBoxResult.Yes) return;
+                    if (MessageBox.Show($"Delete '{entry.Service}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                        return;
                 }
 
                 Passwords.Remove(entry);
@@ -216,33 +223,19 @@ namespace PasswordVaultUSB.ViewModels
             }
         }
 
-        // ... [LogAction та ExecuteChangeMasterPassword залишаються без змін] ...
-
-        public void LogAction(string message)
-        {
-            var timestamp = DateTime.Now.ToString("HH:mm:ss");
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                ActivityLog.Insert(0, $"[{timestamp}] {message}");
-                if (ActivityLog.Count > 200) ActivityLog.RemoveAt(ActivityLog.Count - 1);
-            });
-        }
-
         private void ExecuteChangeMasterPassword(object obj)
         {
-            LogAction("Attempting to change master password");
-
             if (string.IsNullOrWhiteSpace(CurrentPasswordInput) ||
                 string.IsNullOrWhiteSpace(NewPasswordInput) ||
                 string.IsNullOrWhiteSpace(ConfirmPasswordInput))
             {
-                MessageBox.Show("Please fill all password fields.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Please fill all fields.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (CurrentPasswordInput != AppState.CurrentMasterPassword)
             {
-                MessageBox.Show("Current password is incorrect.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Current password incorrect.", "Validation", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -256,49 +249,45 @@ namespace PasswordVaultUSB.ViewModels
             {
                 _storageService.SaveData(AppState.CurrentUserFilePath, NewPasswordInput, Passwords);
                 AppState.CurrentMasterPassword = NewPasswordInput;
-                LogAction("SUCCESS: Master password updated and all data re-encrypted");
-                MessageBox.Show("Master password updated successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                CurrentPasswordInput = string.Empty;
-                NewPasswordInput = string.Empty;
-                ConfirmPasswordInput = string.Empty;
+
+                LogAction("SUCCESS: Master password updated.");
+                MessageBox.Show("Master password updated!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                CurrentPasswordInput = NewPasswordInput = ConfirmPasswordInput = string.Empty;
             }
             catch (Exception ex)
             {
-                LogAction($"ERROR: Failed to update master password - {ex.Message}");
-                MessageBox.Show($"Failed to update password: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogAction($"ERROR: Failed to update password - {ex.Message}");
+                MessageBox.Show($"Failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        // Метод для додавання нового запису (викликається з View)
-        public void AddNewRecord(PasswordRecord newRecord)
+        private void ExecuteLockVault(object obj)
         {
-            Passwords.Add(newRecord);
-            SaveData();
-            LogAction($"NEW ENTRY: Added password for '{newRecord.Service}'");
+            _securityService.StopMonitoring();
+            AppState.CurrentMasterPassword = null;
+            AppState.CurrentUserFilePath = null;
+            LogAction("Vault locked manually.");
+            RequestLockView?.Invoke();
         }
 
-        // Метод для збереження змін після редагування (викликається з View)
-        public void UpdateRecord(PasswordRecord oldRecord, PasswordRecord newRecord)
+        // --- Helpers & Filtering ---
+        public void LogAction(string message)
         {
-            // Знаходимо індекс старого запису
-            int index = Passwords.IndexOf(oldRecord);
-            if (index != -1)
+            var timestamp = DateTime.Now.ToString("HH:mm:ss");
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                // Оновлюємо дані
-                Passwords[index] = newRecord;
-                SaveData();
-                LogAction($"UPDATED: Edited password entry for '{newRecord.Service}'");
-            }
+                ActivityLog.Insert(0, $"[{timestamp}] {message}");
+                if (ActivityLog.Count > 200) ActivityLog.RemoveAt(ActivityLog.Count - 1);
+            });
         }
 
         private bool FilterRecords(object item)
         {
             if (item is PasswordRecord entry)
             {
-                // 1. Перевірка на "Обране"
                 if (IsFavoritesOnly && !entry.IsFavorite) return false;
 
-                // 2. Перевірка на пошук
                 if (string.IsNullOrWhiteSpace(SearchText)) return true;
 
                 var search = SearchText.ToLower();
@@ -309,29 +298,12 @@ namespace PasswordVaultUSB.ViewModels
             return false;
         }
 
-        // Метод ручного блокування
-        private void ExecuteLockVault(object obj)
-        {
-            _securityService.StopMonitoring();
-            AppState.CurrentMasterPassword = null;
-            AppState.CurrentUserFilePath = null;
-            LogAction("Vault locked manually.");
+        public void NotifyUserActivity() => _securityService.ResetAutoLockTimer();
 
-            // Викликаємо подію, щоб View закрилося
-            RequestLockView?.Invoke();
-        }
-
-        // Метод, який викликає View при русі миші/клавіатурі
-        public void NotifyUserActivity()
-        {
-            _securityService.ResetAutoLockTimer();
-        }
-
-        // Оновлення налаштувань (викликається після закриття SettingsView)
         public void RefreshSettings()
         {
-            LoadData(); // Перезавантажуємо дані (якщо треба)
-            _securityService.UpdateSettings(); // Перезапускаємо таймери
+            LoadData();
+            _securityService.UpdateSettings();
         }
     }
 }

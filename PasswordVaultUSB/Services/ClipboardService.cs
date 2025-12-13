@@ -32,13 +32,12 @@ namespace PasswordVaultUSB.Services
             {
                 try
                 {
-                    // Only clear if the clipboard still contains our text
                     if (Clipboard.ContainsText() && Clipboard.GetText() == textToClear)
                     {
                         Clipboard.Clear();
                     }
                 }
-                catch { /* Ignore clipboard access errors */ }
+                catch {}
 
                 timer.Stop();
             };
