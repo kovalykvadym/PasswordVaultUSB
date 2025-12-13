@@ -216,4 +216,41 @@
         <Setter Property="CellStyle" Value="{StaticResource DataGridCellStyle}" />
     </Style>
 
+    <Style x:Key="PasswordPillStyle" TargetType="Border">
+        <Setter Property="Background" Value="#F5F7FA" />
+        <Setter Property="BorderBrush" Value="#E1E4E8" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Margin" Value="5,4" />
+        <Setter Property="Padding" Value="10,0" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="DashboardCardStyle" TargetType="Border">
+        <Setter Property="Background" Value="White" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="BorderBrush" Value="{StaticResource LightBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="20" />
+        <Setter Property="Margin" Value="0,0,0,20" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect
+                    BlurRadius="10"
+                    Direction="270"
+                    Opacity="0.3"
+                    ShadowDepth="2"
+                    Color="#E0E0E0" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="CardHeaderStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="Margin" Value="0,0,0,15" />
+    </Style>
+
 </ResourceDictionary>

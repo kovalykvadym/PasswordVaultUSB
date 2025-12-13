@@ -7,10 +7,10 @@
     xmlns:local="clr-namespace:PasswordVaultUSB.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="MainView"
-    Width="900"
-    Height="600"
-    MinWidth="700"
-    MinHeight="450"
+    Width="950"
+    Height="650"
+    MinWidth="800"
+    MinHeight="500"
     PreviewKeyDown="ResetAutoLockTimer"
     PreviewMouseMove="ResetAutoLockTimer"
     Style="{StaticResource WindowStyle}"
@@ -49,10 +49,9 @@
                     x:Name="MyPasswordsButton"
                     Background="{StaticResource SidebarActiveBackgroundBrush}"
                     Click="MenuButton_Click"
-                    Content="My Password"
+                    Content="My Passwords"
                     Foreground="{StaticResource TextInverseBrush}"
                     Style="{StaticResource MenuButtonStyle}" />
-
                 <Button
                     x:Name="FavoritesButton"
                     Click="MenuButton_Click"
@@ -88,20 +87,17 @@
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
             <Grid
                 x:Name="HeaderGrid"
                 Grid.Row="0"
-                Margin="0,0,0,20">
-
+                Margin="0,0,0,25">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="250" />
+                    <ColumnDefinition Width="280" />
                 </Grid.ColumnDefinitions>
-
 
                 <StackPanel Grid.Column="0">
                     <TextBlock Style="{StaticResource PageTitleStyle}" Text="My Passwords" />
@@ -118,7 +114,7 @@
                     Background="White"
                     BorderBrush="{StaticResource BorderBrush}"
                     BorderThickness="1"
-                    CornerRadius="15">
+                    CornerRadius="20">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -126,12 +122,13 @@
                         </Grid.ColumnDefinitions>
 
                         <TextBlock
-                            Margin="0,0,5,0"
+                            Margin="5,0,5,0"
                             VerticalAlignment="Center"
                             Foreground="{StaticResource TextHintBrush}">
                             <Image
-                                Width="20"
-                                Height="20"
+                                Width="16"
+                                Height="16"
+                                Opacity="0.5"
                                 Source="/Resources/search.png" />
                         </TextBlock>
 
@@ -147,10 +144,9 @@
                             Margin="2,0,0,0"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
-                            Foreground="{StaticResource BorderBrush}"
+                            Foreground="{StaticResource TextHintBrush}"
                             IsHitTestVisible="False"
-                            Text="Search...">
-
+                            Text="Search passwords...">
                             <TextBlock.Style>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Visibility" Value="Collapsed" />
@@ -161,93 +157,123 @@
                                     </Style.Triggers>
                                 </Style>
                             </TextBlock.Style>
-
                         </TextBlock>
                     </Grid>
                 </Border>
             </Grid>
 
-            <StackPanel
+            <ScrollViewer
                 x:Name="ChangePasswordPanel"
                 Grid.Row="1"
-                Margin="0,0,0,20"
-                Background="White"
-                Orientation="Vertical"
+                VerticalScrollBarVisibility="Auto"
                 Visibility="Collapsed">
 
-                <TextBlock
-                    FontSize="18"
-                    Style="{StaticResource SectionTitleStyle}"
-                    Text="Change master password" />
-
-                <StackPanel Margin="0,10,0,10">
-                    <TextBlock
-                        Foreground="{StaticResource TextSecondaryBrush}"
-                        Style="{StaticResource SubHeaderStyle}"
-                        Text="Current password" />
-                    <controls:BindablePasswordBox Height="36" Password="{Binding CurrentPasswordInput, UpdateSourceTrigger=PropertyChanged}" />
-                </StackPanel>
-
-                <StackPanel Margin="0,0,0,10">
-                    <TextBlock
-                        Foreground="{StaticResource TextSecondaryBrush}"
-                        Style="{StaticResource SubHeaderStyle}"
-                        Text="New password" />
-                    <controls:BindablePasswordBox Height="36" Password="{Binding NewPasswordInput, UpdateSourceTrigger=PropertyChanged}" />
-                </StackPanel>
-
-                <StackPanel Margin="0,0,0,15">
-                    <TextBlock
-                        Foreground="{StaticResource TextSecondaryBrush}"
-                        Style="{StaticResource SubHeaderStyle}"
-                        Text="Confirm new password" />
-                    <controls:BindablePasswordBox Height="36" Password="{Binding ConfirmPasswordInput, UpdateSourceTrigger=PropertyChanged}" />
-                </StackPanel>
-
-                <Button
-                    Width="140"
-                    Height="34"
-                    HorizontalAlignment="Right"
-                    Command="{Binding ChangeMasterPasswordCommand}"
-                    Content="Update"
-                    Style="{StaticResource ModernButtonStyle}" />
-
-                <Separator Margin="0,15,0,10" />
-                <TextBlock
-                    Margin="0,0,0,5"
-                    Foreground="{StaticResource TextSecondaryBrush}"
-                    Style="{StaticResource SubHeaderStyle}"
-                    Text="Activity log" />
-                <Border
-                    Height="150"
-                    Background="{StaticResource LogBackgroundBrush}"
-                    BorderBrush="{StaticResource LightBorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="6">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <ItemsControl x:Name="ActivityLogList" ItemsSource="{Binding ActivityLog}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
+                <StackPanel>
+                    <Border Style="{StaticResource DashboardCardStyle}">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource CardHeaderStyle}" Text="Change Master Password" />
                                     <TextBlock
-                                        Margin="6,2"
-                                        FontSize="13"
-                                        Foreground="#444"
-                                        Text="{Binding}" />
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Border>
-            </StackPanel>
+                                        Margin="0,-10,0,20"
+                                        Style="{StaticResource DescriptionTextStyle}"
+                                        Text="Update the key used to encrypt all your data on the USB drive." />
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="20" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Style="{StaticResource LabelStyle}" Text="Current Password" />
+                                    <controls:BindablePasswordBox Height="40" Password="{Binding CurrentPasswordInput, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Style="{StaticResource LabelStyle}" Text="New Password" />
+                                    <controls:BindablePasswordBox
+                                        Height="40"
+                                        Margin="0,0,0,10"
+                                        Password="{Binding NewPasswordInput, UpdateSourceTrigger=PropertyChanged}" />
+
+                                    <TextBlock Style="{StaticResource LabelStyle}" Text="Confirm New Password" />
+                                    <controls:BindablePasswordBox Height="40" Password="{Binding ConfirmPasswordInput, UpdateSourceTrigger=PropertyChanged}" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Button
+                                Width="180"
+                                Height="40"
+                                Margin="0,25,0,0"
+                                HorizontalAlignment="Right"
+                                Command="{Binding ChangeMasterPasswordCommand}"
+                                Content="Update Password"
+                                Style="{StaticResource ModernButtonStyle}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource DashboardCardStyle}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource CardHeaderStyle}" Text="Security Activity Log" />
+
+                            <Border
+                                Height="200"
+                                Padding="10"
+                                Background="{StaticResource LogBackgroundBrush}"
+                                BorderBrush="{StaticResource LightBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl x:Name="ActivityLogList" ItemsSource="{Binding ActivityLog}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid Margin="0,4">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Ellipse
+                                                        Width="6"
+                                                        Height="6"
+                                                        Margin="0,0,10,0"
+                                                        VerticalAlignment="Center"
+                                                        Fill="{StaticResource AccentBrush}"
+                                                        Opacity="0.7" />
+
+                                                    <TextBlock
+                                                        Grid.Column="1"
+                                                        FontFamily="Consolas"
+                                                        FontSize="13"
+                                                        Foreground="#555"
+                                                        Text="{Binding}"
+                                                        TextWrapping="Wrap" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
 
             <DataGrid
                 x:Name="PasswordsGrid"
-                Grid.Row="2"
+                Grid.Row="1"
                 Style="{StaticResource VaultDataGridStyle}">
 
                 <DataGrid.Columns>
                     <DataGridTextColumn
-                        Width="*"
+                        Width="1.2*"
                         Binding="{Binding Service}"
                         FontWeight="Bold"
                         Header="Service">
@@ -255,49 +281,65 @@
                             <Style TargetType="TextBlock">
                                 <Setter Property="HorizontalAlignment" Value="Center" />
                                 <Setter Property="VerticalAlignment" Value="Center" />
+                                <Setter Property="Padding" Value="5,0" />
+                                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
                     <DataGridTextColumn
-                        Width="*"
+                        Width="1.5*"
                         Binding="{Binding Login}"
                         Header="Login">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="HorizontalAlignment" Value="Center" />
                                 <Setter Property="VerticalAlignment" Value="Center" />
+                                <Setter Property="Padding" Value="5,0" />
+                                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-
-                    <DataGridTemplateColumn Width="150" Header="Password">
+                    <DataGridTemplateColumn Width="180" Header="Password">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
-                                    <TextBlock
-                                        Width="100"
-                                        FontFamily="Consolas"
-                                        FontSize="14"
-                                        Text="{Binding DisplayPassword}"
-                                        TextAlignment="Center"
-                                        TextTrimming="CharacterEllipsis" />
+                                <Border Style="{StaticResource PasswordPillStyle}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
 
-                                    <Button
-                                        Click="ToggleShowPassword_Click"
-                                        Style="{StaticResource IconButtonStyle}"
-                                        ToolTip="Show/Hide">
-                                        <Image
-                                            Width="18"
-                                            Height="18"
-                                            Opacity="{Binding EyeIconOpacity}"
-                                            Source="/Resources/visibility.png" />
-                                    </Button>
-                                </StackPanel>
+                                        <TextBlock
+                                            Grid.Column="0"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            FontFamily="Consolas"
+                                            FontSize="14"
+                                            FontWeight="Medium"
+                                            Foreground="#333"
+                                            Text="{Binding DisplayPassword}"
+                                            TextTrimming="CharacterEllipsis" />
+
+                                        <Button
+                                            Grid.Column="1"
+                                            Click="ToggleShowPassword_Click"
+                                            Cursor="Hand"
+                                            Style="{StaticResource IconButtonStyle}"
+                                            ToolTip="Show/Hide">
+                                            <Image
+                                                Width="16"
+                                                Height="16"
+                                                Opacity="{Binding EyeIconOpacity}"
+                                                Source="/Resources/visibility.png" />
+                                        </Button>
+                                    </Grid>
+                                </Border>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
+
                     <DataGridTextColumn
                         Width="*"
                         Binding="{Binding Url}"
@@ -307,25 +349,29 @@
                             <Style TargetType="TextBlock">
                                 <Setter Property="HorizontalAlignment" Value="Center" />
                                 <Setter Property="VerticalAlignment" Value="Center" />
+                                <Setter Property="Padding" Value="5,0" />
+                                <Setter Property="TextTrimming" Value="CharacterEllipsis" />
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTemplateColumn Width="120" Header="Actions">
+                    <DataGridTemplateColumn Width="130" Header="Actions">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-
+                                <StackPanel
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal">
                                     <Button
                                         Margin="0,0,5,0"
                                         Command="{Binding DataContext.CopyPasswordCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                         CommandParameter="{Binding}"
                                         Style="{StaticResource IconButtonStyle}"
                                         ToolTip="Copy to Clipboard">
-
                                         <Image
-                                            Width="18"
-                                            Height="18"
+                                            Width="16"
+                                            Height="16"
+                                            Opacity="0.7"
                                             Source="/Resources/copy.png" />
                                     </Button>
 
@@ -335,40 +381,40 @@
                                         Style="{StaticResource IconButtonStyle}"
                                         ToolTip="Edit Record">
                                         <Image
-                                            Width="18"
-                                            Height="18"
+                                            Width="16"
+                                            Height="16"
+                                            Opacity="0.7"
                                             Source="/Resources/edit.png" />
                                     </Button>
 
                                     <Button
-                                        Margin="0,0,5,0"
                                         Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                         CommandParameter="{Binding}"
                                         Style="{StaticResource IconButtonStyle}"
                                         ToolTip="Delete Record">
-
                                         <Image
-                                            Width="18"
-                                            Height="18"
+                                            Width="16"
+                                            Height="16"
+                                            Opacity="0.7"
                                             Source="/Resources/trash_can.png" />
                                     </Button>
-
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
-                    <DataGridTemplateColumn Width="80" Header="Fav">
+                    <DataGridTemplateColumn Width="60" Header="Fav">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Button
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
                                     Command="{Binding DataContext.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                     CommandParameter="{Binding}"
                                     Style="{StaticResource IconButtonStyle}">
-
                                     <Image
-                                        Width="18"
-                                        Height="18"
+                                        Width="16"
+                                        Height="16"
                                         Opacity="{Binding FavoriteIconOpacity}"
                                         Source="/Resources/star.png" />
                                 </Button>

@@ -11,9 +11,9 @@ namespace PasswordVaultUSB.Services
         private DispatcherTimer _autoLockTimer;
         private DateTime _lastActivityTime;
 
-        // Подія, яка повідомляє, що треба заблокувати сейф (і причину)
+        // Events
         public event Action<string> OnLockRequested;
-        public event Action<string> OnLogAction; // Для логування
+        public event Action<string> OnLogAction;
 
         public SecurityService()
         {
@@ -27,15 +27,17 @@ namespace PasswordVaultUSB.Services
             _usbCheckTimer.Interval = TimeSpan.FromSeconds(AppSettings.UsbCheckInterval);
             _usbCheckTimer.Tick += UsbCheckTimer_Tick;
             _usbCheckTimer.Start();
+
             OnLogAction?.Invoke($"USB monitoring started ({AppSettings.UsbCheckInterval}s)");
 
             // Auto-lock Monitoring
             if (AppSettings.AutoLockTimeout > 0)
             {
                 _autoLockTimer = new DispatcherTimer();
-                _autoLockTimer.Interval = TimeSpan.FromSeconds(10); // Перевірка кожні 10 сек
+                _autoLockTimer.Interval = TimeSpan.FromSeconds(10);
                 _autoLockTimer.Tick += AutoLockTimer_Tick;
                 _autoLockTimer.Start();
+
                 OnLogAction?.Invoke($"Auto-lock monitoring started ({AppSettings.AutoLockTimeout}m)");
             }
         }

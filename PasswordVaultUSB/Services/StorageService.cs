@@ -18,7 +18,6 @@ namespace PasswordVaultUSB.Services
             try
             {
                 string encryptedJson = File.ReadAllText(filePath);
-
                 string json = CryptoService.Decrypt(encryptedJson, password);
 
                 var records = JsonConvert.DeserializeObject<List<PasswordRecord>>(json);

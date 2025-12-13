@@ -1,10 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PasswordVaultUSB.Services
 {
@@ -16,12 +12,12 @@ namespace PasswordVaultUSB.Services
             "settings.json"
         );
 
-        // Налаштування безпеки
-        public static int AutoLockTimeout { get; set; } = 15; // хвилини (0 = ніколи)
-        public static int UsbCheckInterval { get; set; } = 3; // секунди
+        // --- Security Settings ---
+        public static int AutoLockTimeout { get; set; } = 15;
+        public static int UsbCheckInterval { get; set; } = 3;
         public static bool AutoClearClipboard { get; set; } = true;
 
-        // Налаштування відображення
+        // --- Display Settings ---
         public static bool ShowPasswordOnCopy { get; set; } = false;
         public static bool ConfirmDeletions { get; set; } = true;
 
@@ -51,7 +47,6 @@ namespace PasswordVaultUSB.Services
             }
             catch (Exception ex)
             {
-                // Якщо не вдалося завантажити, використовуємо значення за замовчуванням
                 Console.WriteLine($"Failed to load settings: {ex.Message}");
             }
         }
@@ -84,6 +79,7 @@ namespace PasswordVaultUSB.Services
             }
         }
 
+        // DTO for JSON Serialization
         private class SettingsData
         {
             public int AutoLockTimeout { get; set; }

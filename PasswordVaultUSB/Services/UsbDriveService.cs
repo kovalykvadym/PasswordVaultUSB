@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PasswordVaultUSB.Services
 {
@@ -12,20 +8,14 @@ namespace PasswordVaultUSB.Services
         public static string GetUsbPath()
         {
             var drives = DriveInfo.GetDrives();
-
             var usbDrive = drives.FirstOrDefault(d => d.DriveType == DriveType.Removable && d.IsReady);
 
-            if (usbDrive !=  null)
-            {
-                return usbDrive.RootDirectory.FullName;
-            }
-
-            return null;
+            return usbDrive?.RootDirectory.FullName;
         }
 
         public static string CreateVaultFolder(string usbRootPath)
         {
-            string folderPath = Path.Combine(usbRootPath, ".PasswordVauldData");
+            string folderPath = Path.Combine(usbRootPath, ".PasswordVaultData");
 
             if (!Directory.Exists(folderPath))
             {

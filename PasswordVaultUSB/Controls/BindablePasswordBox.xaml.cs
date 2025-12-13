@@ -10,20 +10,25 @@ namespace PasswordVaultUSB.Controls
         private bool _isPasswordVisible = false;
         private bool _isInternalChange = false;
 
-        public static readonly DependencyProperty PasswordProperty =
-            DependencyProperty.Register("Password", typeof(string), typeof(BindablePasswordBox),
-                new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnPasswordPropertyChanged));
+        // --- Dependency Properties ---
+        public static readonly DependencyProperty PasswordProperty = DependencyProperty.Register(
+            "Password",
+            typeof(string),
+            typeof(BindablePasswordBox),
+            new FrameworkPropertyMetadata(string.Empty, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OnPasswordPropertyChanged));
 
         public string Password
         {
-            get { return (string)GetValue(PasswordProperty); }
-            set { SetValue(PasswordProperty, value); }
+            get => (string)GetValue(PasswordProperty);
+            set => SetValue(PasswordProperty, value);
         }
 
         public BindablePasswordBox()
         {
             InitializeComponent();
         }
+
+        // --- Event Handlers ---
 
         private static void OnPasswordPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -33,14 +38,13 @@ namespace PasswordVaultUSB.Controls
             var newPassword = (string)e.NewValue;
 
             box._isInternalChange = true;
+
             if (box.PasswordBoxInput.Password != newPassword)
-            {
                 box.PasswordBoxInput.Password = newPassword ?? string.Empty;
-            }
+
             if (box.TextBoxInput.Text != newPassword)
-            {
                 box.TextBoxInput.Text = newPassword ?? string.Empty;
-            }
+
             box._isInternalChange = false;
         }
 
@@ -50,6 +54,7 @@ namespace PasswordVaultUSB.Controls
 
             _isInternalChange = true;
             Password = PasswordBoxInput.Password;
+
             if (_isPasswordVisible)
             {
                 TextBoxInput.Text = PasswordBoxInput.Password;
@@ -63,6 +68,7 @@ namespace PasswordVaultUSB.Controls
 
             _isInternalChange = true;
             Password = TextBoxInput.Text;
+
             if (!_isPasswordVisible)
             {
                 PasswordBoxInput.Password = TextBoxInput.Text;
@@ -76,6 +82,7 @@ namespace PasswordVaultUSB.Controls
 
             if (_isPasswordVisible)
             {
+                // Show Password
                 TextBoxInput.Text = PasswordBoxInput.Password;
                 TextBoxInput.Visibility = Visibility.Visible;
                 PasswordBoxInput.Visibility = Visibility.Collapsed;
@@ -87,6 +94,7 @@ namespace PasswordVaultUSB.Controls
             }
             else
             {
+                // Hide Password
                 PasswordBoxInput.Password = TextBoxInput.Text;
                 PasswordBoxInput.Visibility = Visibility.Visible;
                 TextBoxInput.Visibility = Visibility.Collapsed;
