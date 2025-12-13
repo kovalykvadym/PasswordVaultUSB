@@ -91,7 +91,6 @@ namespace PasswordVaultUSB.ViewModels
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
 
-        // Action<bool> -> повертає DialogResult (true/false)
         public Action<bool> CloseAction { get; set; }
 
         public AddPasswordViewModel(PasswordRecord recordToEdit = null)
@@ -101,7 +100,6 @@ namespace PasswordVaultUSB.ViewModels
 
             if (recordToEdit != null)
             {
-                // Режим редагування
                 WindowTitle = "Edit information";
                 ButtonText = "Update";
 
@@ -113,7 +111,6 @@ namespace PasswordVaultUSB.ViewModels
             }
             else
             {
-                // Режим додавання
                 WindowTitle = "Add new entry";
                 ButtonText = "Save";
             }

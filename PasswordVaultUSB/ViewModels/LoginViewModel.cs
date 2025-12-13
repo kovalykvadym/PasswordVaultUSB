@@ -5,7 +5,6 @@ using PasswordVaultUSB.Views;
 using System;
 using System.IO;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace PasswordVaultUSB.ViewModels
@@ -13,6 +12,8 @@ namespace PasswordVaultUSB.ViewModels
     public class LoginViewModel : BaseViewModel
     {
         private string _username;
+        private string _password; // 1. Додали поле для пароля
+
         private string _usernameError;
         private string _passwordError;
         private bool _isUsernameErrorVisible;
@@ -28,6 +29,19 @@ namespace PasswordVaultUSB.ViewModels
                 if (SetProperty(ref _username, value))
                 {
                     IsUsernameErrorVisible = false;
+                }
+            }
+        }
+
+        // 2. Додали властивість Password для Binding
+        public string Password
+        {
+            get => _password;
+            set
+            {
+                if (SetProperty(ref _password, value))
+                {
+                    IsPasswordErrorVisible = false;
                 }
             }
         }
@@ -74,8 +88,8 @@ namespace PasswordVaultUSB.ViewModels
             IsUsernameErrorVisible = false;
             IsPasswordErrorVisible = false;
 
-            var passwordBox = parameter as PasswordBox;
-            string password = passwordBox?.Password;
+            // 3. Більше не беремо пароль з parameter! Беремо з властивості.
+            string password = Password;
 
             bool hasError = false;
 
@@ -106,7 +120,6 @@ namespace PasswordVaultUSB.ViewModels
                 }
 
                 string vaultPath = UsbDriveService.CreateVaultFolder(usbPath);
-                // Переконайтеся, що тут немає квадратних дужок [ ]
                 string userFilePath = Path.Combine(vaultPath, $"{Username.Trim()}.dat");
 
                 if (!File.Exists(userFilePath))

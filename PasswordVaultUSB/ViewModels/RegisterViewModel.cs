@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace PasswordVaultUSB.ViewModels
@@ -15,6 +14,9 @@ namespace PasswordVaultUSB.ViewModels
     public class RegisterViewModel : BaseViewModel
     {
         private string _username;
+        private string _password; // 1. Нова властивість
+        private string _confirmPassword; // 1. Нова властивість
+
         private string _usernameError;
         private string _passwordError;
         private string _confPasswordError;
@@ -32,6 +34,32 @@ namespace PasswordVaultUSB.ViewModels
                 if (SetProperty(ref _username, value))
                 {
                     IsUsernameErrorVisible = false;
+                }
+            }
+        }
+
+        // 2. Властивість для першого пароля
+        public string Password
+        {
+            get => _password;
+            set
+            {
+                if (SetProperty(ref _password, value))
+                {
+                    IsPasswordErrorVisible = false;
+                }
+            }
+        }
+
+        // 2. Властивість для підтвердження пароля
+        public string ConfirmPassword
+        {
+            get => _confirmPassword;
+            set
+            {
+                if (SetProperty(ref _confirmPassword, value))
+                {
+                    IsConfPasswordErrorVisible = false;
                 }
             }
         }
@@ -91,20 +119,9 @@ namespace PasswordVaultUSB.ViewModels
             IsPasswordErrorVisible = false;
             IsConfPasswordErrorVisible = false;
 
-            // Отримуємо доступ до PasswordBox через параметр (передаємо вікно)
-            string password = "";
-            string confirm = "";
-
-            if (parameter is Window window)
-            {
-                var passBox = window.FindName("RegPasswordInput") as PasswordBox;
-                var confBox = window.FindName("ConfPasswordInput") as PasswordBox;
-
-                // Також враховуємо, якщо користувач ввів пароль у видиме текстове поле (якщо ви перемикали видимість)
-                // Для спрощення беремо з PasswordBox, оскільки Code-Behind синхронізує їх
-                password = passBox?.Password;
-                confirm = confBox?.Password;
-            }
+            // 3. Більше не шукаємо елементи UI! Беремо значення з властивостей.
+            string password = Password;
+            string confirm = ConfirmPassword;
 
             bool hasError = false;
 

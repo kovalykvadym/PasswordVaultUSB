@@ -2,19 +2,22 @@
 
     <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#F0F2F5" />
     <SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="LogBackgroundBrush" Color="#FAFAFA" />
     <SolidColorBrush x:Key="SidebarBackgroundBrush" Color="#2D2D30" />
     <SolidColorBrush x:Key="SidebarActiveBackgroundBrush" Color="#3E3E42" />
 
     <SolidColorBrush x:Key="TextPrimaryBrush" Color="#333333" />
     <SolidColorBrush x:Key="TextSecondaryBrush" Color="#666666" />
+    <SolidColorBrush x:Key="TextTertiaryBrush" Color="#555555" />
     <SolidColorBrush x:Key="TextHintBrush" Color="#AAAAAA" />
     <SolidColorBrush x:Key="TextInverseBrush" Color="#FFFFFF" />
-
-    <SolidColorBrush x:Key="AccentBrush" Color="#0078D7" />
+    <SolidColorBrush x:Key="AccentBrush" Color="#007dff" />
+    <SolidColorBrush x:Key="DangerBrush" Color="#DC3545" />
     <SolidColorBrush x:Key="ErrorBrush" Color="#D8000C" />
     <SolidColorBrush x:Key="LinkBrush" Color="Blue" />
     <SolidColorBrush x:Key="BorderBrush" Color="#DDDDDD" />
-    <Color x:Key="ShadowColor">#CCCCCC</Color>
+    <SolidColorBrush x:Key="LightBorderBrush" Color="#E0E0E0" />
     <SolidColorBrush x:Key="GridLineBrush" Color="#EEEEEE" />
+    <Color x:Key="ShadowColor">#CCCCCC</Color>
 
 </ResourceDictionary>

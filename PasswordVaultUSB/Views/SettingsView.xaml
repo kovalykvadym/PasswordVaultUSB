@@ -4,61 +4,50 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
     Title="Settings"
     Width="600"
-    Height="500"
+    Height="550"
     ResizeMode="NoResize"
     Style="{StaticResource WindowStyle}"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
-    <Grid Background="#F0F2F5">
+
+    <Grid Background="{StaticResource WindowBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!--  Header  -->
         <Border
             Grid.Row="0"
             Padding="20"
             Background="White"
-            BorderBrush="#E0E0E0"
+            BorderBrush="{StaticResource LightBorderBrush}"
             BorderThickness="0,0,0,1">
             <StackPanel>
-                <TextBlock
-                    FontSize="24"
-                    FontWeight="SemiBold"
-                    Foreground="#333333"
-                    Text="Settings" />
+                <TextBlock Style="{StaticResource SectionTitleStyle}" Text="Settings" />
                 <TextBlock
                     Margin="0,5,0,0"
-                    FontSize="13"
-                    Foreground="#777777"
+                    Style="{StaticResource DescriptionTextStyle}"
                     Text="Configure your PVault preferences" />
             </StackPanel>
         </Border>
 
-        <!--  Content  -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="20">
 
-                <!--  Security Settings  -->
                 <Border
                     Padding="15"
                     Background="White"
-                    BorderBrush="#E0E0E0"
+                    BorderBrush="{StaticResource LightBorderBrush}"
                     BorderThickness="1"
                     CornerRadius="8">
                     <StackPanel>
-                        <TextBlock
-                            FontSize="16"
-                            FontWeight="SemiBold"
-                            Foreground="#333"
-                            Text="Security" />
-                        <Separator Margin="0,10,0,15" Background="#E0E0E0" />
+                        <TextBlock Style="{StaticResource SubHeaderStyle}" Text="Security" />
+                        <Separator Margin="0,10,0,15" Background="{StaticResource LightBorderBrush}" />
 
-                        <!--  Auto-lock timeout  -->
                         <Grid Margin="0,0,0,15">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -69,248 +58,220 @@
                                 <TextBlock
                                     FontSize="14"
                                     FontWeight="SemiBold"
-                                    Foreground="#333"
+                                    Foreground="{StaticResource TextPrimaryBrush}"
                                     Text="Auto-lock timeout" />
                                 <TextBlock
                                     Margin="0,3,0,0"
-                                    FontSize="12"
-                                    Foreground="#777"
-                                    Text="Lock vault after period of inactivity"
-                                    TextWrapping="Wrap" />
+                                    Style="{StaticResource DescriptionTextStyle}"
+                                    Text="Lock vault after period of inactivity (minutes)" />
                             </StackPanel>
 
                             <ComboBox
-                                x:Name="AutoLockComboBox"
                                 Grid.Column="1"
                                 Width="120"
                                 VerticalAlignment="Center"
-                                SelectedIndex="2">
-                                <ComboBoxItem Content="1 minute" Tag="1" />
-                                <ComboBoxItem Content="5 minutes" Tag="5" />
-                                <ComboBoxItem Content="15 minutes" Tag="15" />
-                                <ComboBoxItem Content="30 minutes" Tag="30" />
-                                <ComboBoxItem Content="Never" Tag="0" />
+                                SelectedValue="{Binding AutoLockTimeout}"
+                                SelectedValuePath="Tag">
+
+                                <ComboBoxItem Content="1 minute">
+                                    <ComboBoxItem.Tag>
+                                        <sys:Int32>1</sys:Int32>
+                                    </ComboBoxItem.Tag>
+                                </ComboBoxItem>
+
+                                <ComboBoxItem Content="5 minutes">
+                                    <ComboBoxItem.Tag>
+                                        <sys:Int32>5</sys:Int32>
+                                    </ComboBoxItem.Tag>
+                                </ComboBoxItem>
+
+                                <ComboBoxItem Content="15 minutes">
+                                    <ComboBoxItem.Tag>
+                                        <sys:Int32>15</sys:Int32>
+                                    </ComboBoxItem.Tag>
+                                </ComboBoxItem>
+
+                                <ComboBoxItem Content="30 minutes">
+                                    <ComboBoxItem.Tag>
+                                        <sys:Int32>30</sys:Int32>
+                                    </ComboBoxItem.Tag>
+                                </ComboBoxItem>
+
+                                <ComboBoxItem Content="Never">
+                                    <ComboBoxItem.Tag>
+                                        <sys:Int32>0</sys:Int32>
+                                    </ComboBoxItem.Tag>
+                                </ComboBoxItem>
                             </ComboBox>
                         </Grid>
 
-                        <!--  USB Check Interval  -->
                         <Grid Margin="0,0,0,15">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-
                             <StackPanel Grid.Column="0">
                                 <TextBlock
                                     FontSize="14"
                                     FontWeight="SemiBold"
-                                    Foreground="#333"
+                                    Foreground="{StaticResource TextPrimaryBrush}"
                                     Text="USB check interval" />
                                 <TextBlock
                                     Margin="0,3,0,0"
-                                    FontSize="12"
-                                    Foreground="#777"
-                                    Text="How often to check if USB is connected"
-                                    TextWrapping="Wrap" />
+                                    Style="{StaticResource DescriptionTextStyle}"
+                                    Text="How often to check if USB is connected (seconds)" />
                             </StackPanel>
 
                             <ComboBox
-                                x:Name="UsbCheckComboBox"
                                 Grid.Column="1"
                                 Width="120"
                                 VerticalAlignment="Center"
-                                SelectedIndex="1">
-                                <ComboBoxItem Content="1 second" Tag="1" />
-                                <ComboBoxItem Content="3 seconds" Tag="3" />
-                                <ComboBoxItem Content="5 seconds" Tag="5" />
-                                <ComboBoxItem Content="10 seconds" Tag="10" />
+                                SelectedValue="{Binding UsbCheckInterval}"
+                                SelectedValuePath="Tag">
+                                <ComboBoxItem Content="1 second">
+                                    <ComboBoxItem.Tag>
+                                        <sys:Int32>1</sys:Int32>
+                                    </ComboBoxItem.Tag>
+                                </ComboBoxItem>
+                                <ComboBoxItem Content="3 seconds">
+                                    <ComboBoxItem.Tag>
+                                        <sys:Int32>3</sys:Int32>
+                                    </ComboBoxItem.Tag>
+                                </ComboBoxItem>
+                                <ComboBoxItem Content="5 seconds">
+                                    <ComboBoxItem.Tag>
+                                        <sys:Int32>5</sys:Int32>
+                                    </ComboBoxItem.Tag>
+                                </ComboBoxItem>
+                                <ComboBoxItem Content="10 seconds">
+                                    <ComboBoxItem.Tag>
+                                        <sys:Int32>10</sys:Int32>
+                                    </ComboBoxItem.Tag>
+                                </ComboBoxItem>
                             </ComboBox>
                         </Grid>
 
-                        <!--  Clear clipboard  -->
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-
                             <StackPanel Grid.Column="0">
                                 <TextBlock
                                     FontSize="14"
                                     FontWeight="SemiBold"
-                                    Foreground="#333"
+                                    Foreground="{StaticResource TextPrimaryBrush}"
                                     Text="Auto-clear clipboard" />
                                 <TextBlock
                                     Margin="0,3,0,0"
-                                    FontSize="12"
-                                    Foreground="#777"
-                                    Text="Automatically clear clipboard after copying password"
-                                    TextWrapping="Wrap" />
+                                    Style="{StaticResource DescriptionTextStyle}"
+                                    Text="Automatically clear clipboard after copying password" />
                             </StackPanel>
-
                             <CheckBox
-                                x:Name="ClearClipboardCheckBox"
                                 Grid.Column="1"
                                 VerticalAlignment="Center"
-                                IsChecked="True" />
+                                IsChecked="{Binding AutoClearClipboard}" />
                         </Grid>
                     </StackPanel>
                 </Border>
 
-                <!--  Display Settings  -->
                 <Border
                     Margin="0,15,0,0"
                     Padding="15"
                     Background="White"
-                    BorderBrush="#E0E0E0"
+                    BorderBrush="{StaticResource LightBorderBrush}"
                     BorderThickness="1"
                     CornerRadius="8">
                     <StackPanel>
-                        <TextBlock
-                            FontSize="16"
-                            FontWeight="SemiBold"
-                            Foreground="#333"
-                            Text="Display" />
-                        <Separator Margin="0,10,0,15" Background="#E0E0E0" />
+                        <TextBlock Style="{StaticResource SubHeaderStyle}" Text="Display" />
+                        <Separator Margin="0,10,0,15" Background="{StaticResource LightBorderBrush}" />
 
-                        <!--  Show password by default  -->
                         <Grid Margin="0,0,0,15">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-
                             <StackPanel Grid.Column="0">
                                 <TextBlock
                                     FontSize="14"
                                     FontWeight="SemiBold"
-                                    Foreground="#333"
+                                    Foreground="{StaticResource TextPrimaryBrush}"
                                     Text="Show passwords on copy" />
                                 <TextBlock
                                     Margin="0,3,0,0"
-                                    FontSize="12"
-                                    Foreground="#777"
-                                    Text="Briefly show password when copying to clipboard"
-                                    TextWrapping="Wrap" />
+                                    Style="{StaticResource DescriptionTextStyle}"
+                                    Text="Briefly show password when copying to clipboard" />
                             </StackPanel>
-
                             <CheckBox
-                                x:Name="ShowOnCopyCheckBox"
                                 Grid.Column="1"
                                 VerticalAlignment="Center"
-                                IsChecked="False" />
+                                IsChecked="{Binding ShowPasswordOnCopy}" />
                         </Grid>
 
-                        <!--  Confirm deletions  -->
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-
                             <StackPanel Grid.Column="0">
                                 <TextBlock
                                     FontSize="14"
                                     FontWeight="SemiBold"
-                                    Foreground="#333"
+                                    Foreground="{StaticResource TextPrimaryBrush}"
                                     Text="Confirm deletions" />
                                 <TextBlock
                                     Margin="0,3,0,0"
-                                    FontSize="12"
-                                    Foreground="#777"
-                                    Text="Ask for confirmation before deleting entries"
-                                    TextWrapping="Wrap" />
+                                    Style="{StaticResource DescriptionTextStyle}"
+                                    Text="Ask for confirmation before deleting entries" />
                             </StackPanel>
-
                             <CheckBox
-                                x:Name="ConfirmDeletionsCheckBox"
                                 Grid.Column="1"
                                 VerticalAlignment="Center"
-                                IsChecked="True" />
+                                IsChecked="{Binding ConfirmDeletions}" />
                         </Grid>
                     </StackPanel>
                 </Border>
 
-                <!--  Data Management  -->
                 <Border
                     Margin="0,15,0,0"
                     Padding="15"
                     Background="White"
-                    BorderBrush="#E0E0E0"
+                    BorderBrush="{StaticResource LightBorderBrush}"
                     BorderThickness="1"
                     CornerRadius="8">
                     <StackPanel>
-                        <TextBlock
-                            FontSize="16"
-                            FontWeight="SemiBold"
-                            Foreground="#333"
-                            Text="Data Management" />
-                        <Separator Margin="0,10,0,15" Background="#E0E0E0" />
+                        <TextBlock Style="{StaticResource SubHeaderStyle}" Text="Data Management" />
+                        <Separator Margin="0,10,0,15" Background="{StaticResource LightBorderBrush}" />
 
                         <Button
                             Height="36"
                             Margin="0,0,0,10"
-                            Click="ExportData_Click"
+                            Command="{Binding ExportCommand}"
                             Content="Export Vault Data"
                             Style="{StaticResource ModernButtonStyle}" />
 
                         <Button
                             Height="36"
                             Margin="0,0,0,10"
-                            Click="ImportData_Click"
+                            Command="{Binding ImportCommand}"
                             Content="Import Vault Data"
                             Style="{StaticResource ModernButtonStyle}" />
 
                         <Button
                             Height="36"
-                            Background="#DC3545"
-                            Click="ClearAllData_Click"
+                            Command="{Binding ClearDataCommand}"
                             Content="Clear All Data"
-                            Foreground="White"
-                            Style="{StaticResource ModernButtonStyle}" />
+                            Style="{StaticResource DangerButtonStyle}" />
                     </StackPanel>
                 </Border>
-
-                <!--  About  -->
-                <Border
-                    Margin="0,15,0,0"
-                    Padding="15"
-                    Background="White"
-                    BorderBrush="#E0E0E0"
-                    BorderThickness="1"
-                    CornerRadius="8">
-                    <StackPanel>
-                        <TextBlock
-                            FontSize="16"
-                            FontWeight="SemiBold"
-                            Foreground="#333"
-                            Text="About" />
-                        <Separator Margin="0,10,0,15" Background="#E0E0E0" />
-
-                        <TextBlock
-                            FontSize="13"
-                            Foreground="#555"
-                            TextWrapping="Wrap">
-                            <Run FontWeight="SemiBold" Text="PVault" />
-                            <Run Text="- USB Password Manager" />
-                            <LineBreak />
-                            <Run Text="Version 1.0.0" />
-                            <LineBreak />
-                            <LineBreak />
-                            <Run Text="A secure password manager that stores encrypted data on USB drives." />
-                        </TextBlock>
-                    </StackPanel>
-                </Border>
-
             </StackPanel>
         </ScrollViewer>
 
-        <!--  Footer Buttons  -->
         <Border
             Grid.Row="2"
             Padding="20,15"
             Background="White"
-            BorderBrush="#E0E0E0"
+            BorderBrush="{StaticResource LightBorderBrush}"
             BorderThickness="0,1,0,0">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -324,7 +285,8 @@
                     Width="100"
                     Height="36"
                     Margin="0,0,10,0"
-                    Click="Cancel_Click"
+                    Background="{StaticResource TextHintBrush}"
+                    Command="{Binding CancelCommand}"
                     Content="Cancel"
                     Style="{StaticResource ModernButtonStyle}" />
 
@@ -332,7 +294,7 @@
                     Grid.Column="2"
                     Width="100"
                     Height="36"
-                    Click="SaveSettings_Click"
+                    Command="{Binding SaveCommand}"
                     Content="Save"
                     Style="{StaticResource ModernButtonStyle}" />
             </Grid>
