@@ -65,6 +65,12 @@
                     Content="USB Security Key"
                     Style="{StaticResource MenuButtonStyle}" />
 
+                <Button
+                    x:Name="GeneratorButton"
+                    Click="MenuButton_Click"
+                    Content="Password Generator"
+                    Style="{StaticResource MenuButtonStyle}" />
+
                 <TextBlock
                     Margin="20,20,0,10"
                     FontSize="12"
@@ -433,6 +439,126 @@
                         Command="{Binding SaveSettingsCommand}"
                         Content="Save Settings"
                         Style="{StaticResource ModernButtonStyle}" />
+                </StackPanel>
+            </ScrollViewer>
+
+            <ScrollViewer
+                x:Name="GeneratorPanel"
+                Grid.Row="1"
+                VerticalScrollBarVisibility="Auto"
+                Visibility="Collapsed">
+
+                <StackPanel>
+                    <TextBlock Style="{StaticResource CardHeaderStyle}" Text="Password Generator" />
+
+                    <Border Style="{StaticResource DashboardCardStyle}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SubHeaderStyle}" Text="Configuration" />
+                            <Separator Margin="0,10,0,15" Background="{StaticResource LightBorderBrush}" />
+
+                            <Grid Margin="0,0,0,20">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="40" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock
+                                    VerticalAlignment="Center"
+                                    Foreground="#666"
+                                    Style="{StaticResource LabelStyle}"
+                                    Text="Length:" />
+                                <Slider
+                                    Grid.Column="1"
+                                    Margin="15,0"
+                                    VerticalAlignment="Center"
+                                    IsSnapToTickEnabled="True"
+                                    Maximum="64"
+                                    Minimum="4"
+                                    TickFrequency="1"
+                                    Value="{Binding GenLength}" />
+                                <TextBlock
+                                    Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                    FontSize="16"
+                                    FontWeight="Bold"
+                                    Text="{Binding GenLength}" />
+                            </Grid>
+
+                            <UniformGrid Columns="2" Rows="2">
+                                <CheckBox
+                                    Margin="0,5"
+                                    Content="Uppercase (A-Z)"
+                                    IsChecked="{Binding GenUseUpper}" />
+                                <CheckBox
+                                    Margin="0,5"
+                                    Content="Lowercase (a-z)"
+                                    IsChecked="{Binding GenUseLower}" />
+                                <CheckBox
+                                    Margin="0,5"
+                                    Content="Digits (0-9)"
+                                    IsChecked="{Binding GenUseDigits}" />
+                                <CheckBox
+                                    Margin="0,5"
+                                    Content="Symbols (!@#)"
+                                    IsChecked="{Binding GenUseSymbols}" />
+                            </UniformGrid>
+
+                            <Button
+                                Height="45"
+                                Margin="0,20,0,0"
+                                Command="{Binding GenerateStandaloneCommand}"
+                                Content="Generate Password"
+                                Style="{StaticResource ModernButtonStyle}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource DashboardCardStyle}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource SubHeaderStyle}" Text="Result" />
+                            <Separator Margin="0,10,0,15" Background="{StaticResource LightBorderBrush}" />
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border
+                                    Height="50"
+                                    Background="#F5F7FA"
+                                    BorderBrush="#E1E4E8"
+                                    BorderThickness="1"
+                                    CornerRadius="5">
+                                    <TextBox
+                                        Padding="10,0"
+                                        VerticalAlignment="Center"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        FontFamily="Consolas"
+                                        FontSize="18"
+                                        FontWeight="Bold"
+                                        Foreground="{StaticResource TextPrimaryBrush}"
+                                        IsReadOnly="True"
+                                        Text="{Binding GeneratedPassword}"
+                                        TextAlignment="Center" />
+                                </Border>
+
+                                <Button
+                                    Grid.Column="1"
+                                    Width="50"
+                                    Height="50"
+                                    Margin="10,0,0,0"
+                                    Command="{Binding CopyGeneratedCommand}"
+                                    Style="{StaticResource ModernButtonStyle}"
+                                    ToolTip="Copy to Clipboard">
+                                    <Image
+                                        Width="20"
+                                        Height="20"
+                                        Source="/Resources/copy.png" />
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </ScrollViewer>
 

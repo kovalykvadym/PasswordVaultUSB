@@ -87,6 +87,35 @@ namespace PasswordVaultUSB.ViewModels
         }
 
         // --- NEW: SETTINGS PROPERTIES ---
+
+        private int _genLength = 16;
+        private bool _genUseUpper = true;
+        private bool _genUseLower = true;
+        private bool _genUseDigits = true;
+        private bool _genUseSymbols = true;
+        private string _generatedPassword;
+
+        public int GenLength
+        {
+            get => _genLength;
+            set
+            {
+                if (value < 4) value = 4;
+                if (value > 64) value = 64;
+                SetProperty(ref _genLength, value);
+            }
+        }
+
+        public bool GenUseUpper { get => _genUseUpper; set => SetProperty(ref _genUseUpper, value); }
+        public bool GenUseLower { get => _genUseLower; set => SetProperty(ref _genUseLower, value); }
+        public bool GenUseDigits { get => _genUseDigits; set => SetProperty(ref _genUseDigits, value); }
+        public bool GenUseSymbols { get => _genUseSymbols; set => SetProperty(ref _genUseSymbols, value); }
+
+        public string GeneratedPassword
+        {
+            get => _generatedPassword;
+            set => SetProperty(ref _generatedPassword, value);
+        }
         public int AutoLockTimeout
         {
             get => _autoLockTimeout;
@@ -125,6 +154,8 @@ namespace PasswordVaultUSB.ViewModels
         public ICommand ExportCommand { get; }
         public ICommand ImportCommand { get; }
         public ICommand ClearDataCommand { get; }
+        public ICommand GenerateStandaloneCommand { get; }
+        public ICommand CopyGeneratedCommand { get; }
 
         // --- Constructor ---
         public MainViewModel()
@@ -160,6 +191,8 @@ namespace PasswordVaultUSB.ViewModels
             ExportCommand = new RelayCommand(ExecuteExport);
             ImportCommand = new RelayCommand(ExecuteImport);
             ClearDataCommand = new RelayCommand(ExecuteClearData);
+            GenerateStandaloneCommand = new RelayCommand(ExecuteGenerateStandalone);
+            CopyGeneratedCommand = new RelayCommand(ExecuteCopyGenerated);
 
             LogAction("Application started");
             LoadData();
@@ -492,5 +525,21 @@ namespace PasswordVaultUSB.ViewModels
         }
 
         public void NotifyUserActivity() => _securityService.ResetAutoLockTimer();
+
+        private void ExecuteGenerateStandalone(object obj)
+        {
+            GeneratedPassword = PasswordGeneratorService.GeneratePassword(
+                GenLength, GenUseLower, GenUseUpper, GenUseDigits, GenUseSymbols);
+            LogAction("Generated new secure password");
+        }
+
+        private void ExecuteCopyGenerated(object obj)
+        {
+            if (!string.IsNullOrEmpty(GeneratedPassword))
+            {
+                _clipboardService.CopyToClipboard(GeneratedPassword, AppSettings.AutoClearClipboard);
+                LogAction("Generated password copied to clipboard");
+            }
+        }
     }
 }

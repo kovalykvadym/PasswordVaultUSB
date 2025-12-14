@@ -54,7 +54,7 @@ namespace PasswordVaultUSB.Views
 
         private void SetupMenuButtons()
         {
-            _menuButtons = new List<Button> { MyPasswordsButton, FavoritesButton, UsbButton, SettingsButton };
+            _menuButtons = new List<Button> { MyPasswordsButton, FavoritesButton, UsbButton, GeneratorButton, SettingsButton };
             SetActiveMenuButton(MyPasswordsButton);
         }
 
@@ -68,23 +68,28 @@ namespace PasswordVaultUSB.Views
 
                 bool showUsbPanel = (clickedButton == UsbButton);
                 bool showSettingsPanel = (clickedButton == SettingsButton);
+                bool showGeneratorPanel = (clickedButton == GeneratorButton);
 
                 if (showSettingsPanel)
                 {
                     _viewModel.LoadSettingsToProperties();
                 }
 
-                TogglePanels(showUsbPanel, showSettingsPanel);
+                TogglePanels(showUsbPanel, showSettingsPanel, showGeneratorPanel);
             }
         }
 
-        private void TogglePanels(bool showUsb, bool showSettings)
+        private void TogglePanels(bool showUsb, bool showSettings, bool showGenerator)
         {
             ChangePasswordPanel.Visibility = showUsb ? Visibility.Visible : Visibility.Collapsed;
-
             SettingsPanel.Visibility = showSettings ? Visibility.Visible : Visibility.Collapsed;
 
-            bool showMainContent = !showUsb && !showSettings;
+            if (GeneratorPanel != null)
+            {
+                GeneratorPanel.Visibility = showGenerator ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            bool showMainContent = !showUsb && !showSettings && !showGenerator;
 
             PasswordsGrid.Visibility = showMainContent ? Visibility.Visible : Visibility.Collapsed;
             if (HeaderGrid != null)
