@@ -65,8 +65,10 @@ namespace PasswordVaultUSB.Services
                         if (!Directory.Exists(intruderDir))
                         {
                             Directory.CreateDirectory(intruderDir);
-                            var dirInfo = new DirectoryInfo(intruderDir);
-                            dirInfo.Attributes = FileAttributes.Directory | FileAttributes.Hidden;
+                            var dirInfo = new DirectoryInfo(intruderDir)
+                            {
+                                Attributes = FileAttributes.Directory | FileAttributes.Hidden
+                            };
                         }
 
                         string finalPath = Path.Combine(intruderDir, fileName);

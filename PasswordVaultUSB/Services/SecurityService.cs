@@ -1,5 +1,4 @@
-﻿using PasswordVaultUSB.Models;
-using System;
+﻿using System;
 using System.IO;
 using System.Windows.Threading;
 
@@ -23,8 +22,10 @@ namespace PasswordVaultUSB.Services
         public void StartMonitoring()
         {
             // USB Monitoring
-            _usbCheckTimer = new DispatcherTimer();
-            _usbCheckTimer.Interval = TimeSpan.FromSeconds(AppSettings.UsbCheckInterval);
+            _usbCheckTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(AppSettings.UsbCheckInterval)
+            };
             _usbCheckTimer.Tick += UsbCheckTimer_Tick;
             _usbCheckTimer.Start();
 
@@ -33,8 +34,10 @@ namespace PasswordVaultUSB.Services
             // Auto-lock Monitoring
             if (AppSettings.AutoLockTimeout > 0)
             {
-                _autoLockTimer = new DispatcherTimer();
-                _autoLockTimer.Interval = TimeSpan.FromSeconds(10);
+                _autoLockTimer = new DispatcherTimer
+                {
+                    Interval = TimeSpan.FromSeconds(10)
+                };
                 _autoLockTimer.Tick += AutoLockTimer_Tick;
                 _autoLockTimer.Start();
 

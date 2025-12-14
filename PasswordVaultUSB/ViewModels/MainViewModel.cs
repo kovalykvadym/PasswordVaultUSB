@@ -164,21 +164,18 @@ namespace PasswordVaultUSB.ViewModels
             LogAction("Application started");
             LoadData();
 
-            // Завантажуємо налаштування в змінні
             LoadSettingsToProperties();
 
             _securityService.StartMonitoring();
         }
 
         // --- Data Methods ---
-        public void LoadData()
+        public async void LoadData()
         {
             try
             {
                 Passwords.Clear();
-                // LogAction("Loading encrypted data..."); // Трохи зменшимо логування
-
-                var records = _storageService.LoadData(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword, AppState.CurrentHardwareID);
+                var records = await _storageService.LoadDataAsync(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword, AppState.CurrentHardwareID);
 
                 if (records.Count > 0)
                 {
@@ -193,17 +190,23 @@ namespace PasswordVaultUSB.ViewModels
             }
         }
 
-        public void SaveData()
+        public async void SaveData()
         {
             if (string.IsNullOrEmpty(AppState.CurrentUserFilePath)) return;
+
+            Mouse.OverrideCursor = Cursors.Wait;
             try
             {
-                _storageService.SaveData(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword, Passwords, AppState.CurrentHardwareID);
+                await _storageService.SaveDataAsync(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword, Passwords, AppState.CurrentHardwareID);
             }
             catch (Exception ex)
             {
                 LogAction($"ERROR saving data: {ex.Message}");
                 MessageBox.Show($"Error saving data: {ex.Message}");
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
             }
         }
 
@@ -227,7 +230,6 @@ namespace PasswordVaultUSB.ViewModels
 
         // --- NEW: SETTINGS METHODS ---
 
-        // Викликається при відкритті вкладки налаштувань (ми додамо виклик в CodeBehind)
         public void LoadSettingsToProperties()
         {
             AutoLockTimeout = AppSettings.AutoLockTimeout;
@@ -236,7 +238,6 @@ namespace PasswordVaultUSB.ViewModels
             ShowPasswordOnCopy = AppSettings.ShowPasswordOnCopy;
             ConfirmDeletions = AppSettings.ConfirmDeletions;
 
-            // Запам'ятовуємо, що було на вході
             _originalAutoLockTimeout = AutoLockTimeout;
             _originalUsbCheckInterval = UsbCheckInterval;
         }
@@ -252,13 +253,11 @@ namespace PasswordVaultUSB.ViewModels
             AppSettings.SaveSettings();
             LogAction("Settings saved");
 
-            // BUG FIX #3: Перевіряємо, чи змінилися критичні налаштування
             if (AutoLockTimeout != _originalAutoLockTimeout || UsbCheckInterval != _originalUsbCheckInterval)
             {
                 _securityService.UpdateSettings();
                 LogAction("Security monitors restarted due to settings change");
 
-                // Оновлюємо оригінальні значення
                 _originalAutoLockTimeout = AutoLockTimeout;
                 _originalUsbCheckInterval = UsbCheckInterval;
             }
@@ -266,7 +265,7 @@ namespace PasswordVaultUSB.ViewModels
             MessageBox.Show("Settings saved successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void ExecuteExport(object obj)
+        private async void ExecuteExport(object obj)
         {
             try
             {
@@ -285,7 +284,8 @@ namespace PasswordVaultUSB.ViewModels
 
                 if (saveDialog.ShowDialog() == true)
                 {
-                    var records = _storageService.LoadData(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword, AppState.CurrentHardwareID);
+                    var records = await _storageService.LoadDataAsync(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword, AppState.CurrentHardwareID);
+
                     string json = JsonConvert.SerializeObject(records, Formatting.Indented);
                     File.WriteAllText(saveDialog.FileName, json);
 
@@ -300,7 +300,7 @@ namespace PasswordVaultUSB.ViewModels
             }
         }
 
-        private void ExecuteImport(object obj)
+        private async void ExecuteImport(object obj)
         {
             var openDialog = new OpenFileDialog
             {
@@ -321,9 +321,7 @@ namespace PasswordVaultUSB.ViewModels
                         return;
                     }
 
-                    // Оскільки ми вже в MainViewModel, ми можемо працювати з поточною колекцією
-                    // Але краще завантажити актуальний стан з файлу, щоб уникнути конфліктів
-                    var currentRecords = _storageService.LoadData(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword, AppState.CurrentHardwareID);
+                    var currentRecords = await _storageService.LoadDataAsync(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword, AppState.CurrentHardwareID);
 
                     int addedCount = 0;
                     int skippedCount = 0;
@@ -347,9 +345,8 @@ namespace PasswordVaultUSB.ViewModels
 
                     if (addedCount > 0)
                     {
-                        _storageService.SaveData(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword, currentRecords, AppState.CurrentHardwareID);
+                        await _storageService.SaveDataAsync(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword, currentRecords, AppState.CurrentHardwareID);
 
-                        // BUG FIX #2: Одразу оновлюємо дані на екрані
                         LoadData();
 
                         MessageBox.Show($"Imported: {addedCount}\nSkipped: {skippedCount}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -367,14 +364,16 @@ namespace PasswordVaultUSB.ViewModels
             }
         }
 
-        private void ExecuteClearData(object obj)
+        private async void ExecuteClearData(object obj)
         {
             if (MessageBox.Show("Permanently delete ALL passwords?", "Confirm Clear", MessageBoxButton.YesNo, MessageBoxImage.Stop) == MessageBoxResult.Yes)
             {
                 try
                 {
-                    Passwords.Clear(); // Очищаємо UI
-                    _storageService.SaveData(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword, new List<PasswordRecord>(), AppState.CurrentHardwareID);
+                    Passwords.Clear();
+
+                    await _storageService.SaveDataAsync(AppState.CurrentUserFilePath, AppState.CurrentMasterPassword, new List<PasswordRecord>(), AppState.CurrentHardwareID);
+
                     MessageBox.Show("All data cleared.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
                     LogAction("All data cleared by user");
                 }
@@ -428,7 +427,7 @@ namespace PasswordVaultUSB.ViewModels
             }
         }
 
-        private void ExecuteChangeMasterPassword(object obj)
+        private async void ExecuteChangeMasterPassword(object obj)
         {
             if (string.IsNullOrWhiteSpace(CurrentPasswordInput) || string.IsNullOrWhiteSpace(NewPasswordInput) || string.IsNullOrWhiteSpace(ConfirmPasswordInput))
             {
@@ -445,7 +444,9 @@ namespace PasswordVaultUSB.ViewModels
 
             try
             {
-                _storageService.SaveData(AppState.CurrentUserFilePath, NewPasswordInput, Passwords, AppState.CurrentHardwareID);
+                // Асинхронне збереження з новим паролем
+                await _storageService.SaveDataAsync(AppState.CurrentUserFilePath, NewPasswordInput, Passwords, AppState.CurrentHardwareID);
+
                 AppState.CurrentMasterPassword = NewPasswordInput;
                 LogAction("Master password updated.");
                 MessageBox.Show("Master password updated!");

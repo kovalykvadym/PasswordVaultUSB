@@ -3,12 +3,13 @@ using PasswordVaultUSB.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace PasswordVaultUSB.Services
 {
     public class StorageService
     {
-        public List<PasswordRecord> LoadData(string filePath, string password, string currentHardwareId)
+        public async Task<List<PasswordRecord>> LoadDataAsync(string filePath, string password, string currentHardwareId)
         {
             if (!File.Exists(filePath))
             {
@@ -17,19 +18,28 @@ namespace PasswordVaultUSB.Services
 
             try
             {
-                string encryptedJson = File.ReadAllText(filePath);
-                string json = CryptoService.Decrypt(encryptedJson, password);
+                byte[] encryptedBytes;
 
-                var vaultData = JsonConvert.DeserializeObject<VaultData>(json);
-
-                if (vaultData == null) return new List<PasswordRecord>();
-
-                if (vaultData.HardwareID != currentHardwareId)
+                using (FileStream sourceStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true))
                 {
-                    throw new UnauthorizedAccessException("Hardware Mismatch! This file belongs to another USB drive.");
+                    encryptedBytes = new byte[sourceStream.Length];
+                    await sourceStream.ReadAsync(encryptedBytes, 0, (int)sourceStream.Length);
                 }
 
-                return vaultData.Records ?? new List<PasswordRecord>();
+                return await Task.Run(() =>
+                {
+                    string json = CryptoService.Decrypt(encryptedBytes, password);
+                    var vaultData = JsonConvert.DeserializeObject<VaultData>(json);
+
+                    if (vaultData == null) return new List<PasswordRecord>();
+
+                    if (vaultData.HardwareID != currentHardwareId)
+                    {
+                        throw new UnauthorizedAccessException("Hardware Mismatch! This file belongs to another USB drive.");
+                    }
+
+                    return vaultData.Records ?? new List<PasswordRecord>();
+                });
             }
             catch (Exception)
             {
@@ -37,20 +47,26 @@ namespace PasswordVaultUSB.Services
             }
         }
 
-        public void SaveData(string filePath, string password, IEnumerable<PasswordRecord> records, string currentHardwareId)
+        public async Task SaveDataAsync(string filePath, string password, IEnumerable<PasswordRecord> records, string currentHardwareId)
         {
             try
             {
-                var dataToSave = new VaultData
+                byte[] encryptedBytes = await Task.Run(() =>
                 {
-                    HardwareID = currentHardwareId,
-                    Records = new List<PasswordRecord>(records)
-                };
+                    var dataToSave = new VaultData
+                    {
+                        HardwareID = currentHardwareId,
+                        Records = new List<PasswordRecord>(records)
+                    };
 
-                string json = JsonConvert.SerializeObject(dataToSave);
-                string encryptedJson = CryptoService.Encrypt(json, password);
+                    string json = JsonConvert.SerializeObject(dataToSave);
+                    return CryptoService.Encrypt(json, password);
+                });
 
-                File.WriteAllText(filePath, encryptedJson);
+                using (FileStream sourceStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
+                {
+                    await sourceStream.WriteAsync(encryptedBytes, 0, encryptedBytes.Length);
+                }
             }
             catch (Exception)
             {

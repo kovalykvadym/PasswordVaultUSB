@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
+using System.Threading.Tasks;
 
 namespace PasswordVaultUSB.ViewModels
 {
@@ -121,11 +122,10 @@ namespace PasswordVaultUSB.ViewModels
             else SelectedUsbDrive = null;
         }
 
-        private void ExecuteRegister(object parameter)
+        private async void ExecuteRegister(object parameter)
         {
             ResetErrors();
 
-            // Перевірка вибору флешки
             if (SelectedUsbDrive == null)
             {
                 MessageBox.Show("Please select a USB drive to store your vault!", "USB Error", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -135,12 +135,21 @@ namespace PasswordVaultUSB.ViewModels
 
             if (!ValidateInput()) return;
 
+            Mouse.OverrideCursor = Cursors.Wait;
+
             try
             {
-                // ВИКОРИСТОВУЄМО SelectedUsbDrive
                 string usbPath = SelectedUsbDrive.RootDirectory;
 
                 string currentHardwareId = UsbDriveService.GetDriveSerialNumber(usbPath);
+
+                if (currentHardwareId == "UNKNOWN_ID")
+                {
+                    var result = MessageBox.Show("Warning: Could not read USB Serial Number. Security binding will be weak. Continue?",
+                        "Security Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    if (result == MessageBoxResult.No) return;
+                }
+
                 string vaultPath = UsbDriveService.CreateVaultFolder(usbPath);
                 string userFilePath = Path.Combine(vaultPath, $"{Username.Trim()}.dat");
 
@@ -151,7 +160,7 @@ namespace PasswordVaultUSB.ViewModels
                     return;
                 }
 
-                CreateUserFile(userFilePath, currentHardwareId);
+                await CreateUserFileAsync(userFilePath, currentHardwareId);
 
                 AppState.CurrentUserFilePath = userFilePath;
                 AppState.CurrentMasterPassword = Password;
@@ -164,9 +173,12 @@ namespace PasswordVaultUSB.ViewModels
             {
                 MessageBox.Show($"Critical error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+            finally
+            {
+                Mouse.OverrideCursor = null;
+            }
         }
-
-        private void CreateUserFile(string path, string hardwareId)
+        private async Task CreateUserFileAsync(string path, string hardwareId)
         {
             var initialData = new VaultData
             {
@@ -174,9 +186,16 @@ namespace PasswordVaultUSB.ViewModels
                 Records = new List<PasswordRecord>()
             };
 
-            string json = JsonConvert.SerializeObject(initialData);
-            string encryptedContent = CryptoService.Encrypt(json, Password);
-            File.WriteAllText(path, encryptedContent);
+            byte[] encryptedContent = await Task.Run(() =>
+            {
+                string json = JsonConvert.SerializeObject(initialData);
+                return CryptoService.Encrypt(json, Password);
+            });
+
+            using (FileStream sourceStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
+            {
+                await sourceStream.WriteAsync(encryptedContent, 0, encryptedContent.Length);
+            }
         }
 
         private bool ValidateInput()

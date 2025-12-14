@@ -1,24 +1,12 @@
-﻿using Newtonsoft.Json;
-using PasswordVaultUSB.Models;
-using PasswordVaultUSB.Services;
+﻿using PasswordVaultUSB.Models;
 using PasswordVaultUSB.ViewModels;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using System.Windows.Threading;
 
 namespace PasswordVaultUSB.Views
 {
@@ -27,7 +15,6 @@ namespace PasswordVaultUSB.Views
         private MainViewModel _viewModel;
         private List<Button> _menuButtons;
 
-        // Кольори (можна залишити)
         private readonly Brush _activeBackground = (Brush)new BrushConverter().ConvertFromString("#3E3E42");
         private readonly Brush _inactiveBackground = Brushes.Transparent;
         private readonly Brush _activeForeground = Brushes.White;
@@ -185,9 +172,8 @@ namespace PasswordVaultUSB.Views
         private void ToggleShowPassword_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
-            var entry = button.DataContext as PasswordRecord;
 
-            if (entry != null)
+            if (button.DataContext is PasswordRecord entry)
             {
                 entry.IsPasswordVisible = !entry.IsPasswordVisible;
                 string visibility = entry.IsPasswordVisible ? "VISIBLE" : "HIDDEN";

@@ -37,7 +37,7 @@ namespace PasswordVaultUSB.Services
                         Clipboard.Clear();
                     }
                 }
-                catch {}
+                catch { }
 
                 timer.Stop();
             };

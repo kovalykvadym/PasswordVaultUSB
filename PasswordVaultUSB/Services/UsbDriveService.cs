@@ -44,16 +44,20 @@ namespace PasswordVaultUSB.Services
                 ManagementObjectSearcher searcher = new ManagementObjectSearcher(
                     $"SELECT VolumeSerialNumber FROM Win32_LogicalDisk WHERE Name = '{driveLetter}'");
 
-                foreach (ManagementObject disk in searcher.Get())
+                foreach (var disk in searcher.Get())
                 {
-                    return disk["VolumeSerialNumber"].ToString();
+                    var serial = disk["VolumeSerialNumber"]?.ToString();
+                    if (!string.IsNullOrWhiteSpace(serial))
+                    {
+                        return serial.Trim();
+                    }
                 }
             }
             catch (Exception)
             {
-                return "UNKNOWN_ID";
             }
-            return null;
+
+            return "UNKNOWN_ID";
         }
     }
 }

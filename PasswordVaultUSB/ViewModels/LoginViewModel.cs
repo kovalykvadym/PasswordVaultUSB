@@ -74,7 +74,7 @@ namespace PasswordVaultUSB.ViewModels
         }
 
         // --- Methods ---
-        private void ExecuteLogin(object parameter)
+        private async void ExecuteLogin(object parameter)
         {
             ResetErrors();
 
@@ -86,6 +86,8 @@ namespace PasswordVaultUSB.ViewModels
             }
 
             if (!ValidateInput()) return;
+
+            Mouse.OverrideCursor = Cursors.Wait;
 
             try
             {
@@ -103,11 +105,10 @@ namespace PasswordVaultUSB.ViewModels
 
                 try
                 {
-                    // Цей рядок кине помилку, якщо пароль невірний
-                    var dummyLoad = new StorageService().LoadData(userFilePath, Password, currentHardwareId);
+                    var storage = new StorageService();
+                    await storage.LoadDataAsync(userFilePath, Password, currentHardwareId);
 
-                    // --- УСПІХ ---
-                    _failedAttempts = 0; // Скидаємо лічильник при успішному вході
+                    _failedAttempts = 0;
                     AppState.CurrentUserFilePath = userFilePath;
                     AppState.CurrentMasterPassword = Password;
                     AppState.CurrentHardwareID = currentHardwareId;
@@ -116,23 +117,23 @@ namespace PasswordVaultUSB.ViewModels
                 }
                 catch (UnauthorizedAccessException ex)
                 {
-                    // Це помилка Hardware Lock (не та флешка)
                     ShowError($"Security Alert: {ex.Message}");
                 }
                 catch
                 {
-                    // --- ПОМИЛКА ПАРОЛЯ ---
-                    // Викликаємо логіку фотографування
                     HandleFailedAttempt(usbPath);
-
                     PasswordError = "Invalid password!";
                     IsPasswordErrorVisible = true;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                PasswordError = "Error accessing USB drive!";
+                PasswordError = $"Error: {ex.Message}";
                 IsPasswordErrorVisible = true;
+            }
+            finally
+            {
+                Mouse.OverrideCursor = null;
             }
         }
 

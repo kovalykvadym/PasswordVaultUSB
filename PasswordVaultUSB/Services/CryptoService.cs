@@ -7,49 +7,87 @@ namespace PasswordVaultUSB.Services
 {
     public static class CryptoService
     {
-        private static readonly byte[] Salt = new byte[] { 0x49, 0x76, 0x61, 0x6e, 0x20, 0x4d, 0x65, 0x64, 0x76, 0x65, 0x64, 0x65, 0x76 };
+        private const int SaltSize = 32; // 256 біт
+        private const int IvSize = 16;   // 128 біт (стандарт для AES)
+        private const int Iterations = 100000; // Кількість ітерацій для PBKDF2
 
-        public static string Encrypt(string plainText, string password)
+        // Метод повертає масив байтів, а не рядок, для точності даних
+        public static byte[] Encrypt(string plainText, string password)
         {
-            byte[] clearBytes = Encoding.Unicode.GetBytes(plainText);
+            if (string.IsNullOrEmpty(plainText)) return Array.Empty<byte>();
 
-            using (Aes encryptor = Aes.Create())
+            using (Aes aes = Aes.Create())
             {
-                var pdb = new Rfc2898DeriveBytes(password, Salt);
-                encryptor.Key = pdb.GetBytes(32);
-                encryptor.IV = pdb.GetBytes(16);
-
-                using (MemoryStream ms = new MemoryStream())
+                // 1. Генеруємо випадкову сіль
+                byte[] salt = new byte[SaltSize];
+                using (var rng = RandomNumberGenerator.Create())
                 {
-                    using (CryptoStream cs = new CryptoStream(ms, encryptor.CreateEncryptor(), CryptoStreamMode.Write))
-                    {
-                        cs.Write(clearBytes, 0, clearBytes.Length);
-                        cs.Close();
-                    }
-                    return Convert.ToBase64String(ms.ToArray());
+                    rng.GetBytes(salt);
                 }
+
+                // 2. Генеруємо ключ із пароля та солі
+                using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256))
+                {
+                    aes.Key = pbkdf2.GetBytes(32); // AES-256
+                }
+
+                // 3. Генеруємо випадковий IV
+                aes.GenerateIV();
+                byte[] iv = aes.IV;
+
+                // 4. Шифруємо
+                byte[] encryptedBytes;
+                using (var encryptor = aes.CreateEncryptor())
+                using (var msEncrypt = new MemoryStream())
+                {
+                    using (var csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+                    using (var swEncrypt = new StreamWriter(csEncrypt))
+                    {
+                        swEncrypt.Write(plainText);
+                    }
+                    encryptedBytes = msEncrypt.ToArray();
+                }
+
+                // 5. Комбінуємо все в один масив: [Salt] + [IV] + [Cipher]
+                byte[] result = new byte[SaltSize + IvSize + encryptedBytes.Length];
+                Buffer.BlockCopy(salt, 0, result, 0, SaltSize);
+                Buffer.BlockCopy(iv, 0, result, SaltSize, IvSize);
+                Buffer.BlockCopy(encryptedBytes, 0, result, SaltSize + IvSize, encryptedBytes.Length);
+
+                return result;
             }
         }
 
-        public static string Decrypt(string cipherText, string password)
+        public static string Decrypt(byte[] cipherData, string password)
         {
-            cipherText = cipherText.Replace(" ", "+");
-            byte[] cipherBytes = Convert.FromBase64String(cipherText);
+            if (cipherData == null || cipherData.Length < SaltSize + IvSize)
+                throw new ArgumentException("Invalid data format");
 
-            using (Aes encryptor = Aes.Create())
+            using (Aes aes = Aes.Create())
             {
-                var pdb = new Rfc2898DeriveBytes(password, Salt);
-                encryptor.Key = pdb.GetBytes(32);
-                encryptor.IV = pdb.GetBytes(16);
+                // 1. Витягуємо Сіль та IV з початку масиву
+                byte[] salt = new byte[SaltSize];
+                byte[] iv = new byte[IvSize];
+                byte[] actualCipher = new byte[cipherData.Length - SaltSize - IvSize];
 
-                using (MemoryStream ms = new MemoryStream())
+                Buffer.BlockCopy(cipherData, 0, salt, 0, SaltSize);
+                Buffer.BlockCopy(cipherData, SaltSize, iv, 0, IvSize);
+                Buffer.BlockCopy(cipherData, SaltSize + IvSize, actualCipher, 0, actualCipher.Length);
+
+                // 2. Відновлюємо ключ
+                using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256))
                 {
-                    using (CryptoStream cs = new CryptoStream(ms, encryptor.CreateDecryptor(), CryptoStreamMode.Write))
-                    {
-                        cs.Write(cipherBytes, 0, cipherBytes.Length);
-                        cs.Close();
-                    }
-                    return Encoding.Unicode.GetString(ms.ToArray());
+                    aes.Key = pbkdf2.GetBytes(32);
+                }
+                aes.IV = iv;
+
+                // 3. Дешифруємо
+                using (var decryptor = aes.CreateDecryptor())
+                using (var msDecrypt = new MemoryStream(actualCipher))
+                using (var csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                using (var srDecrypt = new StreamReader(csDecrypt))
+                {
+                    return srDecrypt.ReadToEnd();
                 }
             }
         }
