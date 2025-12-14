@@ -1,5 +1,6 @@
 ﻿using PasswordVaultUSB.Helpers;
 using PasswordVaultUSB.Models;
+using PasswordVaultUSB.Services;
 using System;
 using System.Windows.Input;
 
@@ -76,12 +77,14 @@ namespace PasswordVaultUSB.ViewModels
         // --- Commands ---
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
+        public ICommand GeneratePasswordCommand { get; private set; }
 
         // --- Constructor ---
         public AddPasswordViewModel(PasswordRecord recordToEdit = null)
         {
             SaveCommand = new RelayCommand(ExecuteSave);
             CancelCommand = new RelayCommand(ExecuteCancel);
+            GeneratePasswordCommand = new RelayCommand(ExecuteGeneratePassword);
 
             if (recordToEdit != null)
             {
@@ -136,6 +139,25 @@ namespace PasswordVaultUSB.ViewModels
         private void ExecuteCancel(object obj)
         {
             CloseAction?.Invoke(false);
+        }
+
+        private void ExecuteGeneratePassword(object obj)
+        {
+            int length = 16;
+            bool useLower = true;
+            bool useUpper = true;
+            bool useDigits = true;
+            bool useSymbols = true;
+
+            try
+            {
+                Password = PasswordGeneratorService.GeneratePassword(
+                    length, useLower, useUpper, useDigits, useSymbols);
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Password generation failed: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
         }
     }
 }
