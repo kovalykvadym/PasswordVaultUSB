@@ -29,14 +29,17 @@ namespace PasswordVaultUSB.Services
                 return await Task.Run(() =>
                 {
                     string json = CryptoService.Decrypt(encryptedBytes, password);
+
                     var vaultData = JsonConvert.DeserializeObject<VaultData>(json);
 
                     if (vaultData == null) return new List<PasswordRecord>();
 
                     if (vaultData.HardwareID != currentHardwareId)
                     {
-                        throw new UnauthorizedAccessException("Hardware Mismatch! This file belongs to another USB drive.");
+                        throw new UnauthorizedAccessException("Hardware Mismatch!");
                     }
+
+                    AppSettings.ApplySettings(vaultData.Settings);
 
                     return vaultData.Records ?? new List<PasswordRecord>();
                 });
@@ -56,7 +59,8 @@ namespace PasswordVaultUSB.Services
                     var dataToSave = new VaultData
                     {
                         HardwareID = currentHardwareId,
-                        Records = new List<PasswordRecord>(records)
+                        Records = new List<PasswordRecord>(records),
+                        Settings = AppSettings.GetCurrentSettings()
                     };
 
                     string json = JsonConvert.SerializeObject(dataToSave);

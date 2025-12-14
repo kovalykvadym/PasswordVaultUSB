@@ -1,92 +1,38 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.IO;
-
-namespace PasswordVaultUSB.Services
+﻿namespace PasswordVaultUSB.Services
 {
     public static class AppSettings
     {
-        private static readonly string SettingsFilePath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "PVault",
-            "settings.json"
-        );
-
-        // --- Security Settings ---
+        // Тут зберігаються налаштування АКТИВНОГО користувача
+        // За замовчуванням встановлюємо дефолтні значення
         public static int AutoLockTimeout { get; set; } = 15;
         public static int UsbCheckInterval { get; set; } = 3;
         public static bool AutoClearClipboard { get; set; } = true;
-
-        // --- Display Settings ---
         public static bool ShowPasswordOnCopy { get; set; } = false;
         public static bool ConfirmDeletions { get; set; } = true;
 
-        static AppSettings()
+        // Метод для оновлення поточного стану з завантажених даних
+        public static void ApplySettings(Models.UserSettings settings)
         {
-            LoadSettings();
+            if (settings == null) return;
+
+            AutoLockTimeout = settings.AutoLockTimeout;
+            UsbCheckInterval = settings.UsbCheckInterval;
+            AutoClearClipboard = settings.AutoClearClipboard;
+            ShowPasswordOnCopy = settings.ShowPasswordOnCopy;
+            ConfirmDeletions = settings.ConfirmDeletions;
         }
 
-        public static void LoadSettings()
+        // Метод для отримання поточного стану для збереження
+        public static Models.UserSettings GetCurrentSettings()
         {
-            try
+            return new Models.UserSettings
             {
-                if (File.Exists(SettingsFilePath))
-                {
-                    string json = File.ReadAllText(SettingsFilePath);
-                    var settings = JsonConvert.DeserializeObject<SettingsData>(json);
-
-                    if (settings != null)
-                    {
-                        AutoLockTimeout = settings.AutoLockTimeout;
-                        UsbCheckInterval = settings.UsbCheckInterval;
-                        AutoClearClipboard = settings.AutoClearClipboard;
-                        ShowPasswordOnCopy = settings.ShowPasswordOnCopy;
-                        ConfirmDeletions = settings.ConfirmDeletions;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to load settings: {ex.Message}");
-            }
-        }
-
-        public static void SaveSettings()
-        {
-            try
-            {
-                var settings = new SettingsData
-                {
-                    AutoLockTimeout = AutoLockTimeout,
-                    UsbCheckInterval = UsbCheckInterval,
-                    AutoClearClipboard = AutoClearClipboard,
-                    ShowPasswordOnCopy = ShowPasswordOnCopy,
-                    ConfirmDeletions = ConfirmDeletions
-                };
-
-                string directory = Path.GetDirectoryName(SettingsFilePath);
-                if (!Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
-
-                string json = JsonConvert.SerializeObject(settings, Formatting.Indented);
-                File.WriteAllText(SettingsFilePath, json);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to save settings: {ex.Message}");
-            }
-        }
-
-        // DTO for JSON Serialization
-        private class SettingsData
-        {
-            public int AutoLockTimeout { get; set; }
-            public int UsbCheckInterval { get; set; }
-            public bool AutoClearClipboard { get; set; }
-            public bool ShowPasswordOnCopy { get; set; }
-            public bool ConfirmDeletions { get; set; }
+                AutoLockTimeout = AutoLockTimeout,
+                UsbCheckInterval = UsbCheckInterval,
+                AutoClearClipboard = AutoClearClipboard,
+                ShowPasswordOnCopy = ShowPasswordOnCopy,
+                ConfirmDeletions = ConfirmDeletions
+            };
         }
     }
 }

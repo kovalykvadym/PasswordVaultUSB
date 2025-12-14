@@ -283,9 +283,6 @@ namespace PasswordVaultUSB.ViewModels
             AppSettings.ShowPasswordOnCopy = ShowPasswordOnCopy;
             AppSettings.ConfirmDeletions = ConfirmDeletions;
 
-            AppSettings.SaveSettings();
-            LogAction("Settings saved");
-
             if (AutoLockTimeout != _originalAutoLockTimeout || UsbCheckInterval != _originalUsbCheckInterval)
             {
                 _securityService.UpdateSettings();
@@ -295,7 +292,10 @@ namespace PasswordVaultUSB.ViewModels
                 _originalUsbCheckInterval = UsbCheckInterval;
             }
 
-            MessageBox.Show("Settings saved successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            SaveData();
+
+            LogAction("Settings saved to encrypted vault");
+            MessageBox.Show("Settings updated and saved to your secure file!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private async void ExecuteExport(object obj)

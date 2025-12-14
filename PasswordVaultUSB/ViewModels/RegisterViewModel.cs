@@ -183,7 +183,8 @@ namespace PasswordVaultUSB.ViewModels
             var initialData = new VaultData
             {
                 HardwareID = hardwareId,
-                Records = new List<PasswordRecord>()
+                Records = new List<PasswordRecord>(),
+                Settings = new UserSettings()
             };
 
             byte[] encryptedContent = await Task.Run(() =>
