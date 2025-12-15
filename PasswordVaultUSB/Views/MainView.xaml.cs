@@ -12,9 +12,10 @@ namespace PasswordVaultUSB.Views
 {
     public partial class MainView : Window
     {
-        private MainViewModel _viewModel;
+        private readonly MainViewModel _viewModel;
         private List<Button> _menuButtons;
 
+        // Кольори для меню
         private readonly Brush _activeBackground = (Brush)new BrushConverter().ConvertFromString("#3E3E42");
         private readonly Brush _inactiveBackground = Brushes.Transparent;
         private readonly Brush _activeForeground = Brushes.White;
@@ -27,20 +28,16 @@ namespace PasswordVaultUSB.Views
             _viewModel = new MainViewModel();
             this.DataContext = _viewModel;
 
+            // Логіка переходу до екрану входу при блокуванні
             _viewModel.RequestLockView += () =>
             {
                 var loginView = new LoginView();
                 loginView.Show();
 
-                var windowsToClose = new List<Window>();
-
-                foreach (Window window in Application.Current.Windows)
-                {
-                    if (window != loginView)
-                    {
-                        windowsToClose.Add(window);
-                    }
-                }
+                var windowsToClose = Application.Current.Windows
+                                        .OfType<Window>()
+                                        .Where(w => w != loginView)
+                                        .ToList();
 
                 foreach (var window in windowsToClose)
                 {
@@ -57,6 +54,8 @@ namespace PasswordVaultUSB.Views
             _menuButtons = new List<Button> { MyPasswordsButton, FavoritesButton, UsbButton, GeneratorButton, SettingsButton };
             SetActiveMenuButton(MyPasswordsButton);
         }
+
+        // --- UI Navigation Logic ---
 
         private void MenuButton_Click(object sender, RoutedEventArgs e)
         {
@@ -113,26 +112,37 @@ namespace PasswordVaultUSB.Views
             }
         }
 
-        private void LogAction(string message)
-        {
-            _viewModel.LogAction(message);
-        }
-
+        // --- Dialog Logic with MVVM Integration ---
 
         private void AddPassword_Click(object sender, RoutedEventArgs e)
         {
             LogAction("Opening 'Add Password' dialog");
-            var addWindow = new AddPasswordView();
+
+            // Створюємо ViewModel для діалогу додавання
+            var addVm = new AddPasswordViewModel();
+            var addWindow = new AddPasswordView
+            {
+                Owner = this,
+                DataContext = addVm
+            };
+
+            // Прив'язуємо закриття вікна до дії у ViewModel
+            addVm.CloseAction = (isSaved) =>
+            {
+                addWindow.DialogResult = isSaved;
+                addWindow.Close();
+            };
 
             if (addWindow.ShowDialog() == true)
             {
+                // Створюємо новий запис із даних VM
                 var newEntry = new PasswordRecord
                 {
-                    Service = addWindow.Service,
-                    Login = addWindow.Login,
-                    Password = addWindow.Password,
-                    Url = addWindow.Url,
-                    Notes = addWindow.Notes
+                    Service = addVm.Service,
+                    Login = addVm.Login,
+                    Password = addVm.Password,
+                    Url = addVm.Url,
+                    Notes = addVm.Notes
                 };
 
                 _viewModel.AddNewRecord(newEntry);
@@ -149,20 +159,36 @@ namespace PasswordVaultUSB.Views
             if (button?.DataContext is PasswordRecord entry)
             {
                 LogAction($"Opening edit dialog for '{entry.Service}'");
-                var editWindow = new AddPasswordView(entry);
+
+                // Передаємо існуючий запис у конструктор ViewModel
+                var editVm = new AddPasswordViewModel(entry);
+                var editWindow = new AddPasswordView
+                {
+                    Owner = this,
+                    DataContext = editVm
+                };
+
+                editVm.CloseAction = (isSaved) =>
+                {
+                    editWindow.DialogResult = isSaved;
+                    editWindow.Close();
+                };
 
                 if (editWindow.ShowDialog() == true)
                 {
+                    // Оновлюємо запис новими даними
                     var updatedEntry = new PasswordRecord
                     {
-                        Service = editWindow.Service,
-                        Login = editWindow.Login,
-                        Password = editWindow.Password,
-                        Url = editWindow.Url,
-                        Notes = editWindow.Notes,
+                        Service = editVm.Service,
+                        Login = editVm.Login,
+                        Password = editVm.Password,
+                        Url = editVm.Url,
+                        Notes = editVm.Notes,
 
+                        // Зберігаємо старі стани
                         IsFavorite = entry.IsFavorite,
-                        IsPasswordVisible = false
+                        IsPasswordVisible = false,
+                        CreatedDate = entry.CreatedDate // Дата створення не змінюється
                     };
 
                     _viewModel.UpdateRecord(entry, updatedEntry);
@@ -176,14 +202,19 @@ namespace PasswordVaultUSB.Views
 
         private void ToggleShowPassword_Click(object sender, RoutedEventArgs e)
         {
-            var button = sender as Button;
-
-            if (button.DataContext is PasswordRecord entry)
+            if (sender is Button button && button.DataContext is PasswordRecord entry)
             {
                 entry.IsPasswordVisible = !entry.IsPasswordVisible;
                 string visibility = entry.IsPasswordVisible ? "VISIBLE" : "HIDDEN";
                 LogAction($"Password visibility toggled to {visibility} for '{entry.Service}'");
             }
+        }
+
+        // --- Helpers ---
+
+        private void LogAction(string message)
+        {
+            _viewModel.LogAction(message);
         }
 
         protected override void OnClosed(EventArgs e)

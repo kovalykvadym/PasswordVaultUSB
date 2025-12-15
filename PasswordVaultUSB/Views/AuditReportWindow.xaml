@@ -1,0 +1,146 @@
+﻿<Window
+    x:Class="PasswordVaultUSB.Views.AuditReportWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Security Audit"
+    Width="350"
+    Height="450"
+    AllowsTransparency="True"
+    Background="Transparent"
+    MouseLeftButtonDown="Window_MouseLeftButtonDown"
+    WindowStartupLocation="CenterOwner"
+    WindowStyle="None">
+
+    <Border
+        Background="White"
+        BorderBrush="#E0E0E0"
+        BorderThickness="1"
+        CornerRadius="15">
+        <Border.Effect>
+            <DropShadowEffect
+                BlurRadius="20"
+                Opacity="0.2"
+                ShadowDepth="5" />
+        </Border.Effect>
+
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock
+                HorizontalAlignment="Center"
+                FontSize="18"
+                FontWeight="Bold"
+                Foreground="#333"
+                Text="Security Health" />
+            <TextBlock
+                Grid.Row="0"
+                HorizontalAlignment="Right"
+                Cursor="Hand"
+                FontSize="18"
+                Foreground="#999"
+                MouseLeftButtonUp="Close_Click"
+                Text="✕" />
+
+            <Border
+                x:Name="GradeBorder"
+                Grid.Row="1"
+                Width="100"
+                Height="100"
+                Margin="0,20"
+                Background="#4CAF50"
+                CornerRadius="50">
+                <TextBlock
+                    x:Name="GradeText"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="48"
+                    FontWeight="Bold"
+                    Foreground="White"
+                    Text="A" />
+            </Border>
+
+            <StackPanel Grid.Row="2" VerticalAlignment="Center">
+
+                <Grid Margin="0,5">
+                    <TextBlock Foreground="#666" Text="Total Passwords" />
+                    <TextBlock
+                        x:Name="TotalText"
+                        HorizontalAlignment="Right"
+                        FontWeight="Bold"
+                        Text="0" />
+                </Grid>
+                <Separator Background="#F0F0F0" />
+
+                <Grid Margin="0,10">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Margin="0,0,5,0" Text="⚠️" />
+                        <TextBlock Foreground="#666" Text="Duplicates" />
+                    </StackPanel>
+                    <TextBlock
+                        x:Name="DupText"
+                        HorizontalAlignment="Right"
+                        FontWeight="Bold"
+                        Foreground="#F44336"
+                        Text="0" />
+                </Grid>
+
+                <Grid Margin="0,10">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Margin="0,0,5,0" Text="🔓" />
+                        <TextBlock Foreground="#666" Text="Weak Passwords" />
+                    </StackPanel>
+                    <TextBlock
+                        x:Name="WeakText"
+                        HorizontalAlignment="Right"
+                        FontWeight="Bold"
+                        Foreground="#FF9800"
+                        Text="0" />
+                </Grid>
+
+                <Grid Margin="0,10">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Margin="0,0,5,0" Text="📅" />
+                        <TextBlock Foreground="#666" Text="Old (&gt;1 year)" />
+                    </StackPanel>
+                    <TextBlock
+                        x:Name="OldText"
+                        HorizontalAlignment="Right"
+                        FontWeight="Bold"
+                        Foreground="#FFC107"
+                        Text="0" />
+                </Grid>
+
+                <TextBlock
+                    x:Name="RecText"
+                    Margin="0,15,0,0"
+                    HorizontalAlignment="Center"
+                    FontSize="12"
+                    Foreground="#888"
+                    Text="Everything looks good!"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+
+            <Button
+                Grid.Row="3"
+                Height="40"
+                Background="#333"
+                BorderThickness="0"
+                Click="Close_Click"
+                Content="Done"
+                Cursor="Hand"
+                Foreground="White">
+                <Button.Resources>
+                    <Style TargetType="Border">
+                        <Setter Property="CornerRadius" Value="8" />
+                    </Style>
+                </Button.Resources>
+            </Button>
+        </Grid>
+    </Border>
+</Window>

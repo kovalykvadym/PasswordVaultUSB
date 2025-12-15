@@ -1,17 +1,16 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace PasswordVaultUSB.Services
 {
+    // Сервіс для шифрування та дешифрування даних
     public static class CryptoService
     {
-        private const int SaltSize = 32; // 256 біт
-        private const int IvSize = 16;   // 128 біт (стандарт для AES)
-        private const int Iterations = 100000; // Кількість ітерацій для PBKDF2
+        private const int SaltSize = 32;       // Розмір "солі" для унікальності ключа
+        private const int IvSize = 16;         // Розмір вектора ініціалізації(блочна реалізація AES)
+        private const int Iterations = 100000; // Кількість проходів хешування
 
-        // Метод повертає масив байтів, а не рядок, для точності даних
         public static byte[] Encrypt(string plainText, string password)
         {
             if (string.IsNullOrEmpty(plainText)) return Array.Empty<byte>();
@@ -28,15 +27,16 @@ namespace PasswordVaultUSB.Services
                 // 2. Генеруємо ключ із пароля та солі
                 using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256))
                 {
-                    aes.Key = pbkdf2.GetBytes(32); // AES-256
+                    aes.Key = pbkdf2.GetBytes(32); // 32 байти = 256 біт
                 }
 
-                // 3. Генеруємо випадковий IV
+                // 3. Генеруємо випадковий вектор ініціалізації
                 aes.GenerateIV();
                 byte[] iv = aes.IV;
 
-                // 4. Шифруємо
                 byte[] encryptedBytes;
+
+                // 4. Шифруємо текст
                 using (var encryptor = aes.CreateEncryptor())
                 using (var msEncrypt = new MemoryStream())
                 {
@@ -48,7 +48,7 @@ namespace PasswordVaultUSB.Services
                     encryptedBytes = msEncrypt.ToArray();
                 }
 
-                // 5. Комбінуємо все в один масив: [Salt] + [IV] + [Cipher]
+                // 5. Формуємо фінальний пакет: [Salt] + [IV] + [EncryptedData]
                 byte[] result = new byte[SaltSize + IvSize + encryptedBytes.Length];
                 Buffer.BlockCopy(salt, 0, result, 0, SaltSize);
                 Buffer.BlockCopy(iv, 0, result, SaltSize, IvSize);
@@ -60,12 +60,13 @@ namespace PasswordVaultUSB.Services
 
         public static string Decrypt(byte[] cipherData, string password)
         {
+            // Перевірка цілісності даних
             if (cipherData == null || cipherData.Length < SaltSize + IvSize)
                 throw new ArgumentException("Invalid data format");
 
             using (Aes aes = Aes.Create())
             {
-                // 1. Витягуємо Сіль та IV з початку масиву
+                // 1. Розбираємо пакет назад: витягуємо Salt, IV та самі дані
                 byte[] salt = new byte[SaltSize];
                 byte[] iv = new byte[IvSize];
                 byte[] actualCipher = new byte[cipherData.Length - SaltSize - IvSize];
@@ -74,7 +75,7 @@ namespace PasswordVaultUSB.Services
                 Buffer.BlockCopy(cipherData, SaltSize, iv, 0, IvSize);
                 Buffer.BlockCopy(cipherData, SaltSize + IvSize, actualCipher, 0, actualCipher.Length);
 
-                // 2. Відновлюємо ключ
+                // 2. Відновлюємо ключ, використовуючи витягнуту сіль
                 using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256))
                 {
                     aes.Key = pbkdf2.GetBytes(32);

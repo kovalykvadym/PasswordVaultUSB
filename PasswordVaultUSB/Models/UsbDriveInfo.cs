@@ -1,5 +1,6 @@
 ﻿namespace PasswordVaultUSB.Models
 {
+    // Зберігає інформацію про підключену флешку
     public class UsbDriveInfo
     {
         public string Name { get; set; }

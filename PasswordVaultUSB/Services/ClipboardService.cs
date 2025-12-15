@@ -28,19 +28,27 @@ namespace PasswordVaultUSB.Services
         private void StartClearTimer(string textToClear)
         {
             var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
-            timer.Tick += (s, e) =>
+
+            timer.Tick += (sender, args) =>
             {
                 try
                 {
+                    // Перевіряємо, чи в буфері все ще наш пароль.
+                    // Якщо користувач вже встиг скопіювати щось інше - не чіпаємо.
                     if (Clipboard.ContainsText() && Clipboard.GetText() == textToClear)
                     {
                         Clipboard.Clear();
                     }
                 }
-                catch { }
-
-                timer.Stop();
+                catch
+                {
+                }
+                finally
+                {
+                    timer.Stop();
+                }
             };
+
             timer.Start();
         }
     }

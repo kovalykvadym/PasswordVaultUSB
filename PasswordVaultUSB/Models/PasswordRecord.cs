@@ -4,12 +4,13 @@ using System.Runtime.CompilerServices;
 
 namespace PasswordVaultUSB.Models
 {
+    // Модель одного запису з паролем (логін, сайт, дані для входу)
     public class PasswordRecord : INotifyPropertyChanged
     {
         private bool _isPasswordVisible;
         private bool _isFavorite;
 
-        // Data Properties
+        // Основні дані запису
         public string Service { get; set; }
         public string Login { get; set; }
         public string Password { get; set; }
@@ -17,7 +18,7 @@ namespace PasswordVaultUSB.Models
         public string Notes { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
-        // UI State Properties
+        // Властивості для керування інтерфейсом (UI)
         public bool IsPasswordVisible
         {
             get => _isPasswordVisible;
@@ -27,6 +28,7 @@ namespace PasswordVaultUSB.Models
                 {
                     _isPasswordVisible = value;
                     OnPropertyChanged();
+                    // Оновлюємо вигляд пароля та іконки "ока"
                     OnPropertyChanged(nameof(DisplayPassword));
                     OnPropertyChanged(nameof(EyeIconOpacity));
                 }
@@ -47,7 +49,7 @@ namespace PasswordVaultUSB.Models
             }
         }
 
-        // Computed Properties for UI
+        // Допоміжні поля для прив'язки в XAML (Bindings)
         public string DisplayPassword => IsPasswordVisible ? Password : "*********";
         public double EyeIconOpacity => IsPasswordVisible ? 1.0 : 0.6;
         public double FavoriteIconOpacity => IsFavorite ? 1.0 : 0.2;

@@ -7,11 +7,12 @@
     xmlns:local="clr-namespace:PasswordVaultUSB.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
-    Title="MainView"
-    Width="950"
-    Height="650"
-    MinWidth="800"
-    MinHeight="500"
+    xmlns:viewModels="clr-namespace:PasswordVaultUSB.ViewModels"
+    Title="Password Vault USB"
+    Width="1000"
+    Height="700"
+    MinWidth="850"
+    MinHeight="550"
     PreviewKeyDown="ResetAutoLockTimer"
     PreviewMouseMove="ResetAutoLockTimer"
     Style="{StaticResource WindowStyle}"
@@ -53,6 +54,7 @@
                     Content="My Passwords"
                     Foreground="{StaticResource TextInverseBrush}"
                     Style="{StaticResource MenuButtonStyle}" />
+
                 <Button
                     x:Name="FavoritesButton"
                     Click="MenuButton_Click"
@@ -83,6 +85,19 @@
                     Click="MenuButton_Click"
                     Content="Settings"
                     Style="{StaticResource MenuButtonStyle}" />
+
+                <Button
+                    Command="{Binding AuditCommand}"
+                    Content="Health Check"
+                    Style="{StaticResource MenuButtonStyle}"
+                    ToolTip="Scan for weak and duplicate passwords" />
+
+                <Button
+                    Command="{Binding ViewIntrudersCommand}"
+                    Content="Intruder Log"
+                    Style="{StaticResource MenuButtonStyle}"
+                    ToolTip="View photos of failed login attempts" />
+
                 <Button
                     Command="{Binding LockVaultCommand}"
                     Content="Lock Vault"
@@ -91,7 +106,6 @@
         </Border>
 
         <Grid Grid.Column="1" Margin="30">
-
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -149,7 +163,6 @@
                         <TextBlock
                             Grid.Column="1"
                             Margin="2,0,0,0"
-                            HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             Foreground="{StaticResource TextHintBrush}"
                             IsHitTestVisible="False"
@@ -174,7 +187,6 @@
                 Grid.Row="1"
                 VerticalScrollBarVisibility="Auto"
                 Visibility="Collapsed">
-
                 <StackPanel>
                     <Border Style="{StaticResource DashboardCardStyle}">
                         <StackPanel>
@@ -230,7 +242,6 @@
                     <Border Style="{StaticResource DashboardCardStyle}">
                         <StackPanel>
                             <TextBlock Style="{StaticResource CardHeaderStyle}" Text="Security Activity Log" />
-
                             <Border
                                 Height="200"
                                 Padding="10"
@@ -239,7 +250,7 @@
                                 BorderThickness="1"
                                 CornerRadius="6">
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                    <ItemsControl x:Name="ActivityLogList" ItemsSource="{Binding ActivityLog}">
+                                    <ItemsControl ItemsSource="{Binding ActivityLog}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Grid Margin="0,4">
@@ -254,7 +265,6 @@
                                                         VerticalAlignment="Center"
                                                         Fill="{StaticResource AccentBrush}"
                                                         Opacity="0.7" />
-
                                                     <TextBlock
                                                         Grid.Column="1"
                                                         FontFamily="Consolas"
@@ -278,7 +288,6 @@
                 Grid.Row="1"
                 VerticalScrollBarVisibility="Auto"
                 Visibility="Collapsed">
-
                 <StackPanel Margin="0,0,10,0">
                     <TextBlock Style="{StaticResource CardHeaderStyle}" Text="Application Settings" />
 
@@ -292,14 +301,12 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock
                                         Margin="0"
                                         Style="{StaticResource LabelStyle}"
                                         Text="Auto-lock timeout (minutes)" />
                                 </StackPanel>
-
                                 <ComboBox
                                     Grid.Column="1"
                                     Width="120"
@@ -410,7 +417,7 @@
                                     Margin="0,0,5,0"
                                     Padding="0,10"
                                     Command="{Binding ExportCommand}"
-                                    Content="Export JSON"
+                                    Content="Export Data"
                                     Style="{StaticResource ModernButtonStyle}" />
 
                                 <Button
@@ -418,7 +425,7 @@
                                     Margin="5,0,5,0"
                                     Padding="0,10"
                                     Command="{Binding ImportCommand}"
-                                    Content="Import JSON"
+                                    Content="Import Data"
                                     Style="{StaticResource ModernButtonStyle}" />
 
                                 <Button
@@ -447,7 +454,6 @@
                 Grid.Row="1"
                 VerticalScrollBarVisibility="Auto"
                 Visibility="Collapsed">
-
                 <StackPanel>
                     <TextBlock Style="{StaticResource CardHeaderStyle}" Text="Password Generator" />
 
@@ -530,7 +536,6 @@
                                     BorderThickness="1"
                                     CornerRadius="5">
                                     <TextBox
-                                        Padding="10,0"
                                         VerticalAlignment="Center"
                                         Background="Transparent"
                                         BorderThickness="0"
@@ -549,11 +554,12 @@
                                     Height="50"
                                     Margin="10,0,0,0"
                                     Command="{Binding CopyGeneratedCommand}"
-                                    Style="{StaticResource ModernButtonStyle}"
+                                    Style="{StaticResource IconButtonStyle}"
                                     ToolTip="Copy to Clipboard">
                                     <Image
                                         Width="20"
                                         Height="20"
+                                        Opacity="0.7"
                                         Source="/Resources/copy.png" />
                                 </Button>
                             </Grid>
@@ -566,7 +572,6 @@
                 x:Name="PasswordsGrid"
                 Grid.Row="1"
                 Style="{StaticResource VaultDataGridStyle}">
-
                 <DataGrid.Columns>
                     <DataGridTextColumn
                         Width="1.2*"
@@ -575,7 +580,6 @@
                         Header="Service">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
-                                <Setter Property="HorizontalAlignment" Value="Center" />
                                 <Setter Property="VerticalAlignment" Value="Center" />
                                 <Setter Property="Padding" Value="5,0" />
                                 <Setter Property="TextTrimming" Value="CharacterEllipsis" />
@@ -589,7 +593,6 @@
                         Header="Login">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
-                                <Setter Property="HorizontalAlignment" Value="Center" />
                                 <Setter Property="VerticalAlignment" Value="Center" />
                                 <Setter Property="Padding" Value="5,0" />
                                 <Setter Property="TextTrimming" Value="CharacterEllipsis" />
@@ -606,7 +609,6 @@
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
-
                                         <TextBlock
                                             Grid.Column="0"
                                             HorizontalAlignment="Center"
@@ -617,7 +619,6 @@
                                             Foreground="#333"
                                             Text="{Binding DisplayPassword}"
                                             TextTrimming="CharacterEllipsis" />
-
                                         <Button
                                             Grid.Column="1"
                                             Click="ToggleShowPassword_Click"
@@ -643,7 +644,6 @@
                         Header="Website">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
-                                <Setter Property="HorizontalAlignment" Value="Center" />
                                 <Setter Property="VerticalAlignment" Value="Center" />
                                 <Setter Property="Padding" Value="5,0" />
                                 <Setter Property="TextTrimming" Value="CharacterEllipsis" />

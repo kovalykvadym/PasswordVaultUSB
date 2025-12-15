@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace PasswordVaultUSB.Services
 {
+    // Сервіс для збереження та завантаження бази даних
     public class StorageService
     {
         public async Task<List<PasswordRecord>> LoadDataAsync(string filePath, string password, string currentHardwareId)
@@ -16,65 +17,56 @@ namespace PasswordVaultUSB.Services
                 return new List<PasswordRecord>();
             }
 
-            try
+            // 1. Читаємо зашифрований файл у пам'ять
+            byte[] encryptedBytes;
+            using (FileStream sourceStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true))
             {
-                byte[] encryptedBytes;
+                encryptedBytes = new byte[sourceStream.Length];
+                await sourceStream.ReadAsync(encryptedBytes, 0, (int)sourceStream.Length);
+            }
 
-                using (FileStream sourceStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true))
+            // 2. Дешифруємо та розбираємо JSON у фоновому потоці
+            return await Task.Run(() =>
+            {
+                string json = CryptoService.Decrypt(encryptedBytes, password);
+
+                var vaultData = JsonConvert.DeserializeObject<VaultData>(json);
+
+                if (vaultData == null) return new List<PasswordRecord>();
+
+                // 3. ПЕРЕВІРКА БЕЗПЕКИ Це захищає від копіювання файлу бази на інший носій.
+                if (vaultData.HardwareID != currentHardwareId)
                 {
-                    encryptedBytes = new byte[sourceStream.Length];
-                    await sourceStream.ReadAsync(encryptedBytes, 0, (int)sourceStream.Length);
+                    throw new UnauthorizedAccessException("Hardware Mismatch! This file belongs to a different USB drive.");
                 }
 
-                return await Task.Run(() =>
-                {
-                    string json = CryptoService.Decrypt(encryptedBytes, password);
+                // 4. Застосовуємо завантажені налаштування програми
+                AppSettings.ApplySettings(vaultData.Settings);
 
-                    var vaultData = JsonConvert.DeserializeObject<VaultData>(json);
-
-                    if (vaultData == null) return new List<PasswordRecord>();
-
-                    if (vaultData.HardwareID != currentHardwareId)
-                    {
-                        throw new UnauthorizedAccessException("Hardware Mismatch!");
-                    }
-
-                    AppSettings.ApplySettings(vaultData.Settings);
-
-                    return vaultData.Records ?? new List<PasswordRecord>();
-                });
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+                return vaultData.Records ?? new List<PasswordRecord>();
+            });
         }
 
         public async Task SaveDataAsync(string filePath, string password, IEnumerable<PasswordRecord> records, string currentHardwareId)
         {
-            try
+            // 1. Підготовка даних та шифрування
+            byte[] encryptedBytes = await Task.Run(() =>
             {
-                byte[] encryptedBytes = await Task.Run(() =>
+                var dataToSave = new VaultData
                 {
-                    var dataToSave = new VaultData
-                    {
-                        HardwareID = currentHardwareId,
-                        Records = new List<PasswordRecord>(records),
-                        Settings = AppSettings.GetCurrentSettings()
-                    };
+                    HardwareID = currentHardwareId,
+                    Records = new List<PasswordRecord>(records),
+                    Settings = AppSettings.GetCurrentSettings() // Зберігаємо поточні налаштування
+                };
 
-                    string json = JsonConvert.SerializeObject(dataToSave);
-                    return CryptoService.Encrypt(json, password);
-                });
+                string json = JsonConvert.SerializeObject(dataToSave);
+                return CryptoService.Encrypt(json, password);
+            });
 
-                using (FileStream sourceStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
-                {
-                    await sourceStream.WriteAsync(encryptedBytes, 0, encryptedBytes.Length);
-                }
-            }
-            catch (Exception)
+            // 2. Запис на диск
+            using (FileStream sourceStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
             {
-                throw;
+                await sourceStream.WriteAsync(encryptedBytes, 0, encryptedBytes.Length);
             }
         }
     }

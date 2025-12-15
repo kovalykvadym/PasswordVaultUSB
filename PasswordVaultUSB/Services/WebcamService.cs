@@ -1,6 +1,7 @@
 ﻿using AForge.Video;
 using AForge.Video.DirectShow;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -16,39 +17,21 @@ namespace PasswordVaultUSB.Services
         private static Bitmap _lastFrame;
         private static readonly object _lockObj = new object();
 
-        public static void CaptureIntruder(string saveDirectory)
+        // Основний метод захоплення фото порушника
+        public static void CaptureIntruder(string usbRootPath)
         {
             Task.Run(() =>
             {
                 try
                 {
-                    _videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+                    string cameraMoniker = GetBestCameraMoniker();
+                    if (string.IsNullOrEmpty(cameraMoniker)) return;
 
-                    if (_videoDevices.Count == 0) return;
-
-                    // Логіка вибору камери (ігноруємо OBS/Virtual)
-                    FilterInfo preferredDevice = null;
-
-                    foreach (FilterInfo device in _videoDevices)
-                    {
-                        if (!device.Name.ToUpper().Contains("OBS") &&
-                            !device.Name.ToUpper().Contains("VIRTUAL"))
-                        {
-                            preferredDevice = device;
-                            break;
-                        }
-                    }
-
-                    if (preferredDevice == null)
-                    {
-                        preferredDevice = _videoDevices[0];
-                    }
-
-                    _videoSource = new VideoCaptureDevice(preferredDevice.MonikerString);
+                    _videoSource = new VideoCaptureDevice(cameraMoniker);
                     _videoSource.NewFrame += VideoSource_NewFrame;
                     _videoSource.Start();
 
-                    // Чекаємо кадр (5 секунд)
+                    // Очікування отримання першого кадру
                     int attempts = 0;
                     while (_lastFrame == null && attempts < 50)
                     {
@@ -58,35 +41,93 @@ namespace PasswordVaultUSB.Services
 
                     if (_lastFrame != null)
                     {
-                        string fileName = $"INTRUDER_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.jpg";
-
-                        // Створюємо приховану папку Intruders
-                        string intruderDir = Path.Combine(saveDirectory, "Intruders");
-                        if (!Directory.Exists(intruderDir))
-                        {
-                            Directory.CreateDirectory(intruderDir);
-                            var dirInfo = new DirectoryInfo(intruderDir)
-                            {
-                                Attributes = FileAttributes.Directory | FileAttributes.Hidden
-                            };
-                        }
-
-                        string finalPath = Path.Combine(intruderDir, fileName);
-
-                        lock (_lockObj)
-                        {
-                            _lastFrame.Save(finalPath, ImageFormat.Jpeg);
-                        }
+                        SaveImageToHiddenFolder(usbRootPath);
                     }
-
-                    StopCamera();
                 }
                 catch
                 {
-                    // Тихо гасимо будь-які помилки, щоб не видати себе
+                }
+                finally
+                {
                     StopCamera();
                 }
             });
+        }
+
+        // Отримує список фотографій з прихованої папки
+        public static List<string> GetIntruderImages(string saveDirectory)
+        {
+            var images = new List<string>();
+            try
+            {
+                string intruderDir = Path.Combine(saveDirectory, "Intruders");
+
+                if (Directory.Exists(intruderDir))
+                {
+                    var files = Directory.GetFiles(intruderDir, "*.jpg");
+                    images.AddRange(files);
+                }
+            }
+            catch { }
+
+            images.Reverse();
+            return images;
+        }
+
+        // --- Private Helpers ---
+
+        // Знаходить реальну веб-камеру, ігноруючи віртуальні
+        private static string GetBestCameraMoniker()
+        {
+            try
+            {
+                _videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+
+                if (_videoDevices.Count == 0) return null;
+
+                foreach (FilterInfo device in _videoDevices)
+                {
+                    string name = device.Name.ToUpper();
+                    if (!name.Contains("OBS") && !name.Contains("VIRTUAL"))
+                    {
+                        return device.MonikerString;
+                    }
+                }
+
+                // Якщо не знайшли "чисту" камеру, беремо першу ліпшу
+                return _videoDevices[0].MonikerString;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static void SaveImageToHiddenFolder(string rootPath)
+        {
+            try
+            {
+                string fileName = $"INTRUDER_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.jpg";
+                string intruderDir = Path.Combine(rootPath, "Intruders");
+
+                // Створюємо папку, якщо її немає
+                DirectoryInfo dirInfo = Directory.CreateDirectory(intruderDir);
+
+                // Робимо папку прихованою та системною
+                try
+                {
+                    dirInfo.Attributes = FileAttributes.Directory | FileAttributes.Hidden | FileAttributes.System;
+                }
+                catch { }
+
+                string finalPath = Path.Combine(intruderDir, fileName);
+
+                lock (_lockObj)
+                {
+                    _lastFrame.Save(finalPath, ImageFormat.Jpeg);
+                }
+            }
+            catch { }
         }
 
         private static void VideoSource_NewFrame(object sender, NewFrameEventArgs eventArgs)
@@ -106,8 +147,12 @@ namespace PasswordVaultUSB.Services
                 _videoSource.WaitForStop();
                 _videoSource = null;
             }
-            _lastFrame?.Dispose();
-            _lastFrame = null;
+
+            lock (_lockObj)
+            {
+                _lastFrame?.Dispose();
+                _lastFrame = null;
+            }
         }
     }
 }

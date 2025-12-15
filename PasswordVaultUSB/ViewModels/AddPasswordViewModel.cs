@@ -1,28 +1,34 @@
-﻿using PasswordVaultUSB.Helpers;
-using PasswordVaultUSB.Models;
-using PasswordVaultUSB.Services;
+﻿using PasswordVaultUSB.Models;
 using System;
 using System.Windows.Input;
 
 namespace PasswordVaultUSB.ViewModels
 {
-    public class AddPasswordViewModel : BaseViewModel
+    public partial class AddPasswordViewModel : BaseViewModel
     {
-        // --- Private Fields ---
+        #region Fields
+        // Data Fields
         private string _service;
         private string _login;
         private string _password;
         private string _url;
         private string _notes;
 
+        // Error Visibility Flags
         private bool _isServiceErrorVisible;
         private bool _isLoginErrorVisible;
         private bool _isPasswordErrorVisible;
+        #endregion
 
-        // --- Properties ---
+        #region Properties
+        // UI Text
         public string WindowTitle { get; private set; }
         public string ButtonText { get; private set; }
 
+        // Callback to close window (bool = true if saved)
+        public Action<bool> CloseAction { get; set; }
+
+        // Data Properties
         public string Service
         {
             get => _service;
@@ -52,8 +58,9 @@ namespace PasswordVaultUSB.ViewModels
             get => _notes;
             set => SetProperty(ref _notes, value);
         }
+        #endregion
 
-        // Visibility
+        #region Validation Properties
         public bool IsServiceErrorVisible
         {
             get => _isServiceErrorVisible;
@@ -71,24 +78,32 @@ namespace PasswordVaultUSB.ViewModels
             get => _isPasswordErrorVisible;
             set => SetProperty(ref _isPasswordErrorVisible, value);
         }
+        #endregion
 
-        public Action<bool> CloseAction { get; set; }
-
-        // --- Commands ---
-        public ICommand SaveCommand { get; }
-        public ICommand CancelCommand { get; }
+        #region Commands
+        public ICommand SaveCommand { get; private set; }
+        public ICommand CancelCommand { get; private set; }
         public ICommand GeneratePasswordCommand { get; private set; }
+        #endregion
 
-        // --- Constructor ---
         public AddPasswordViewModel(PasswordRecord recordToEdit = null)
         {
-            SaveCommand = new RelayCommand(ExecuteSave);
-            CancelCommand = new RelayCommand(ExecuteCancel);
-            GeneratePasswordCommand = new RelayCommand(ExecuteGeneratePassword);
+            InitializeCommands();
+            InitializeData(recordToEdit);
+        }
 
+        private void InitializeCommands()
+        {
+            SaveCommand = new Helpers.RelayCommand(ExecuteSave);
+            CancelCommand = new Helpers.RelayCommand(ExecuteCancel);
+            GeneratePasswordCommand = new Helpers.RelayCommand(ExecuteGeneratePassword);
+        }
+
+        private void InitializeData(PasswordRecord recordToEdit)
+        {
             if (recordToEdit != null)
             {
-                WindowTitle = "Edit information";
+                WindowTitle = "Edit Information";
                 ButtonText = "Update";
 
                 Service = recordToEdit.Service;
@@ -99,64 +114,8 @@ namespace PasswordVaultUSB.ViewModels
             }
             else
             {
-                WindowTitle = "Add new entry";
+                WindowTitle = "Add New Entry";
                 ButtonText = "Save";
-            }
-        }
-
-        // --- Methods ---
-        private void ExecuteSave(object obj)
-        {
-            if (!ValidateInput()) return;
-            CloseAction?.Invoke(true);
-        }
-
-        private bool ValidateInput()
-        {
-            bool isValid = true;
-
-            if (string.IsNullOrWhiteSpace(Service))
-            {
-                IsServiceErrorVisible = true;
-                isValid = false;
-            }
-
-            if (string.IsNullOrWhiteSpace(Login))
-            {
-                IsLoginErrorVisible = true;
-                isValid = false;
-            }
-
-            if (string.IsNullOrWhiteSpace(Password))
-            {
-                IsPasswordErrorVisible = true;
-                isValid = false;
-            }
-
-            return isValid;
-        }
-
-        private void ExecuteCancel(object obj)
-        {
-            CloseAction?.Invoke(false);
-        }
-
-        private void ExecuteGeneratePassword(object obj)
-        {
-            int length = 16;
-            bool useLower = true;
-            bool useUpper = true;
-            bool useDigits = true;
-            bool useSymbols = true;
-
-            try
-            {
-                Password = PasswordGeneratorService.GeneratePassword(
-                    length, useLower, useUpper, useDigits, useSymbols);
-            }
-            catch (Exception ex)
-            {
-                System.Windows.MessageBox.Show($"Password generation failed: {ex.Message}", "Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
         }
     }
