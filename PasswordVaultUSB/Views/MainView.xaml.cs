@@ -142,7 +142,8 @@ namespace PasswordVaultUSB.Views
                     Login = addVm.Login,
                     Password = addVm.Password,
                     Url = addVm.Url,
-                    Notes = addVm.Notes
+                    Notes = addVm.Notes,
+                    Category = addVm.Category
                 };
 
                 _viewModel.AddNewRecord(newEntry);
@@ -184,11 +185,10 @@ namespace PasswordVaultUSB.Views
                         Password = editVm.Password,
                         Url = editVm.Url,
                         Notes = editVm.Notes,
-
-                        // Зберігаємо старі стани
+                        Category = editVm.Category,
                         IsFavorite = entry.IsFavorite,
                         IsPasswordVisible = false,
-                        CreatedDate = entry.CreatedDate // Дата створення не змінюється
+                        CreatedDate = entry.CreatedDate
                     };
 
                     _viewModel.UpdateRecord(entry, updatedEntry);

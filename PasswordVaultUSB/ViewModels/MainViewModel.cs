@@ -70,6 +70,7 @@ namespace PasswordVaultUSB.ViewModels
 
             // Налаштування фільтрації
             _passwordsView = CollectionViewSource.GetDefaultView(Passwords);
+            _passwordsView.GroupDescriptions.Add(new PropertyGroupDescription("Category"));
             _passwordsView.Filter = FilterRecords;
 
             // Підписка на події безпеки

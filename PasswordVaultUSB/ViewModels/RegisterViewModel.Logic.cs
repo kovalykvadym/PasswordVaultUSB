@@ -111,14 +111,5 @@ namespace PasswordVaultUSB.ViewModels
                 await sourceStream.WriteAsync(encryptedContent, 0, encryptedContent.Length);
             }
         }
-
-        private SecureString ConvertToSecureString(string password)
-        {
-            if (password == null) return null;
-            var secure = new SecureString();
-            foreach (char c in password) secure.AppendChar(c);
-            secure.MakeReadOnly();
-            return secure;
-        }
     }
 }

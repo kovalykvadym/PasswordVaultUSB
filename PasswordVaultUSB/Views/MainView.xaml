@@ -571,10 +571,87 @@
             <DataGrid
                 x:Name="PasswordsGrid"
                 Grid.Row="1"
-                Style="{StaticResource VaultDataGridStyle}">
+                AutoGenerateColumns="False"
+                CanUserAddRows="False"
+                GridLinesVisibility="Horizontal"
+                HeadersVisibility="Column"
+                HorizontalScrollBarVisibility="Auto"
+                Style="{StaticResource VaultDataGridStyle}"
+                VerticalScrollBarVisibility="Auto">
+
+                <DataGrid.ColumnHeaderStyle>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Padding" Value="10,5" />
+                        <Setter Property="FontWeight" Value="Bold" />
+                        <Setter Property="Height" Value="35" />
+                        <Setter Property="Background" Value="Transparent" />
+                    </Style>
+                </DataGrid.ColumnHeaderStyle>
+
+                <DataGrid.GroupStyle>
+                    <GroupStyle>
+
+                        <!--  🔥 КЛЮЧОВИЙ ФІКС  -->
+                        <GroupStyle.Panel>
+                            <ItemsPanelTemplate>
+                                <DataGridRowsPresenter />
+                            </ItemsPanelTemplate>
+                        </GroupStyle.Panel>
+
+                        <GroupStyle.HeaderTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock
+                                        Margin="5,10,0,5"
+                                        FontSize="14"
+                                        FontWeight="Bold"
+                                        Foreground="{StaticResource AccentBrush}"
+                                        Text="{Binding Name}" />
+                                    <Border
+                                        Height="1"
+                                        Background="{StaticResource AccentBrush}"
+                                        Opacity="0.3" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </GroupStyle.HeaderTemplate>
+
+                        <GroupStyle.ContainerStyle>
+                            <Style TargetType="{x:Type GroupItem}">
+                                <Setter Property="Margin" Value="0,0,0,10" />
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="{x:Type GroupItem}">
+                                            <Expander BorderThickness="0" IsExpanded="True">
+                                                <Expander.Header>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock
+                                                            FontWeight="Bold"
+                                                            Foreground="#555"
+                                                            Text="{Binding Name}" />
+                                                        <TextBlock
+                                                            FontStyle="Italic"
+                                                            Foreground="#999"
+                                                            Text="{Binding ItemCount, StringFormat=' ({0})'}" />
+                                                    </StackPanel>
+                                                </Expander.Header>
+
+                                                <!--  🔥 ТУТ ВЖЕ ПРАЦЮЄ  -->
+                                                <ItemsPresenter />
+                                            </Expander>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </GroupStyle.ContainerStyle>
+
+                    </GroupStyle>
+                </DataGrid.GroupStyle>
+
+
                 <DataGrid.Columns>
                     <DataGridTextColumn
                         Width="1.2*"
+                        MinWidth="100"
                         Binding="{Binding Service}"
                         FontWeight="Bold"
                         Header="Service">
@@ -589,6 +666,7 @@
 
                     <DataGridTextColumn
                         Width="1.5*"
+                        MinWidth="120"
                         Binding="{Binding Login}"
                         Header="Login">
                         <DataGridTextColumn.ElementStyle>
@@ -639,6 +717,7 @@
 
                     <DataGridTextColumn
                         Width="*"
+                        MinWidth="100"
                         Binding="{Binding Url}"
                         Foreground="{StaticResource LinkBrush}"
                         Header="Website">

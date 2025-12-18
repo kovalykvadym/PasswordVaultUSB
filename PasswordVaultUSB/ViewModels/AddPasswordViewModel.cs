@@ -1,5 +1,6 @@
 ﻿using PasswordVaultUSB.Models;
 using System;
+using System.Collections.Generic;
 using System.Windows.Input;
 
 namespace PasswordVaultUSB.ViewModels
@@ -13,6 +14,7 @@ namespace PasswordVaultUSB.ViewModels
         private string _password;
         private string _url;
         private string _notes;
+        private string _category;
 
         // Error Visibility Flags
         private bool _isServiceErrorVisible;
@@ -29,6 +31,23 @@ namespace PasswordVaultUSB.ViewModels
         public Action<bool> CloseAction { get; set; }
 
         // Data Properties
+        public List<string> AvailableCategories { get; } = new List<string>
+        {
+            "Social Media",
+            "Email",
+            "Banking & Finance",
+            "Work",
+            "Shopping",
+            "Entertainment",
+            "Utilities",
+            "Other"
+        };
+
+        public string Category
+        {
+            get => _category;
+            set => SetProperty(ref _category, value);
+        }
         public string Service
         {
             get => _service;
@@ -58,6 +77,9 @@ namespace PasswordVaultUSB.ViewModels
             get => _notes;
             set => SetProperty(ref _notes, value);
         }
+
+        
+
         #endregion
 
         #region Validation Properties
@@ -111,11 +133,13 @@ namespace PasswordVaultUSB.ViewModels
                 Password = recordToEdit.Password;
                 Url = recordToEdit.Url;
                 Notes = recordToEdit.Notes;
+                Category = string.IsNullOrEmpty(recordToEdit.Category) ? "Other" : recordToEdit.Category;
             }
             else
             {
                 WindowTitle = "Add New Entry";
                 ButtonText = "Save";
+                Category = "Social Media";
             }
         }
     }

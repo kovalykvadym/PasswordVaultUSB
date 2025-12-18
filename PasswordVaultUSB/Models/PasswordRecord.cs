@@ -19,6 +19,21 @@ namespace PasswordVaultUSB.Models
         public DateTime CreatedDate { get; set; } = DateTime.Now;
 
         // Властивості для керування інтерфейсом (UI)
+
+        private string _category = "Uncategorized";
+
+        public string Category
+        {
+            get => _category;
+            set
+            {
+                if (_category != value)
+                {
+                    _category = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public bool IsPasswordVisible
         {
             get => _isPasswordVisible;

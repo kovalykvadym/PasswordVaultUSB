@@ -3,6 +3,7 @@ using PasswordVaultUSB.Models;
 using PasswordVaultUSB.Services;
 using System;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
 
 namespace PasswordVaultUSB.ViewModels
@@ -78,6 +79,7 @@ namespace PasswordVaultUSB.ViewModels
                 SaveData();
                 LogAction($"UPDATED: Edited password entry for '{newRecord.Service}'");
             }
+            CollectionViewSource.GetDefaultView(Passwords).Refresh();
         }
 
         private void DeletePassword(object parameter)
