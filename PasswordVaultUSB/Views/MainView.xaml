@@ -11,20 +11,18 @@
     Title="Password Vault USB"
     Width="1000"
     Height="700"
-    MinWidth="850"
-    MinHeight="550"
+    MinWidth="950"
+    MinHeight="640"
     PreviewKeyDown="ResetAutoLockTimer"
     PreviewMouseMove="ResetAutoLockTimer"
     Style="{StaticResource WindowStyle}"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
-
     <Grid Background="{StaticResource WindowBackgroundBrush}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="220" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-
         <Border Grid.Column="0" Background="{StaticResource SidebarBackgroundBrush}">
             <StackPanel>
                 <TextBlock
@@ -32,21 +30,18 @@
                     Foreground="{StaticResource TextInverseBrush}"
                     Style="{StaticResource PageTitleStyle}"
                     Text="PVault" />
-
                 <Button
                     Height="40"
                     Margin="15,0,15,30"
                     Click="AddPassword_Click"
                     Content="+ Add Password"
                     Style="{StaticResource ModernButtonStyle}" />
-
                 <TextBlock
                     Margin="20,0,0,10"
                     FontSize="12"
                     FontWeight="Bold"
                     Foreground="{StaticResource TextSecondaryBrush}"
                     Text="MAIN MENU" />
-
                 <Button
                     x:Name="MyPasswordsButton"
                     Background="{StaticResource SidebarActiveBackgroundBrush}"
@@ -54,63 +49,53 @@
                     Content="My Passwords"
                     Foreground="{StaticResource TextInverseBrush}"
                     Style="{StaticResource MenuButtonStyle}" />
-
                 <Button
                     x:Name="FavoritesButton"
                     Click="MenuButton_Click"
                     Content="Favorites"
                     Style="{StaticResource MenuButtonStyle}" />
-
                 <Button
                     x:Name="UsbButton"
                     Click="MenuButton_Click"
                     Content="USB Security Key"
                     Style="{StaticResource MenuButtonStyle}" />
-
                 <Button
                     x:Name="GeneratorButton"
                     Click="MenuButton_Click"
                     Content="Password Generator"
                     Style="{StaticResource MenuButtonStyle}" />
-
                 <TextBlock
                     Margin="20,20,0,10"
                     FontSize="12"
                     FontWeight="Bold"
                     Foreground="{StaticResource TextSecondaryBrush}"
                     Text="SYSTEM" />
-
                 <Button
                     x:Name="SettingsButton"
                     Click="MenuButton_Click"
                     Content="Settings"
                     Style="{StaticResource MenuButtonStyle}" />
-
                 <Button
                     Command="{Binding AuditCommand}"
                     Content="Health Check"
                     Style="{StaticResource MenuButtonStyle}"
                     ToolTip="Scan for weak and duplicate passwords" />
-
                 <Button
                     Command="{Binding ViewIntrudersCommand}"
                     Content="Intruder Log"
                     Style="{StaticResource MenuButtonStyle}"
                     ToolTip="View photos of failed login attempts" />
-
                 <Button
                     Command="{Binding LockVaultCommand}"
                     Content="Lock Vault"
                     Style="{StaticResource MenuButtonStyle}" />
             </StackPanel>
         </Border>
-
         <Grid Grid.Column="1" Margin="30">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-
             <Grid
                 x:Name="HeaderGrid"
                 Grid.Row="0"
@@ -119,7 +104,6 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="280" />
                 </Grid.ColumnDefinitions>
-
                 <StackPanel Grid.Column="0">
                     <TextBlock Style="{StaticResource PageTitleStyle}" Text="My Passwords" />
                     <TextBlock
@@ -127,7 +111,6 @@
                         Style="{StaticResource DescriptionTextStyle}"
                         Text="Manage and secure your credentials" />
                 </StackPanel>
-
                 <Border
                     Grid.Column="1"
                     Padding="10,5"
@@ -141,7 +124,6 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-
                         <TextBlock
                             Margin="5,0,5,0"
                             VerticalAlignment="Center"
@@ -152,14 +134,12 @@
                                 Opacity="0.5"
                                 Source="/Resources/search.png" />
                         </TextBlock>
-
                         <TextBox
                             x:Name="SearchBox"
                             Grid.Column="1"
                             FontSize="14"
                             Style="{StaticResource BaseInputStyle}"
                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
-
                         <TextBlock
                             Grid.Column="1"
                             Margin="2,0,0,0"
@@ -181,7 +161,6 @@
                     </Grid>
                 </Border>
             </Grid>
-
             <ScrollViewer
                 x:Name="ChangePasswordPanel"
                 Grid.Row="1"
@@ -203,19 +182,16 @@
                                         Text="Update the key used to encrypt all your data on the USB drive." />
                                 </StackPanel>
                             </Grid>
-
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="20" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Style="{StaticResource LabelStyle}" Text="Current Password" />
                                     <controls:BindablePasswordBox Height="40" Password="{Binding CurrentPasswordInput, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
-
                                 <StackPanel Grid.Column="2">
                                     <TextBlock Style="{StaticResource LabelStyle}" Text="New Password" />
                                     <controls:BindablePasswordBox
@@ -227,7 +203,6 @@
                                     <controls:BindablePasswordBox Height="40" Password="{Binding ConfirmPasswordInput, UpdateSourceTrigger=PropertyChanged}" />
                                 </StackPanel>
                             </Grid>
-
                             <Button
                                 Width="180"
                                 Height="40"
@@ -238,7 +213,6 @@
                                 Style="{StaticResource ModernButtonStyle}" />
                         </StackPanel>
                     </Border>
-
                     <Border Style="{StaticResource DashboardCardStyle}">
                         <StackPanel>
                             <TextBlock Style="{StaticResource CardHeaderStyle}" Text="Security Activity Log" />
@@ -282,7 +256,6 @@
                     </Border>
                 </StackPanel>
             </ScrollViewer>
-
             <ScrollViewer
                 x:Name="SettingsPanel"
                 Grid.Row="1"
@@ -290,12 +263,10 @@
                 Visibility="Collapsed">
                 <StackPanel Margin="0,0,10,0">
                     <TextBlock Style="{StaticResource CardHeaderStyle}" Text="Application Settings" />
-
                     <Border Style="{StaticResource DashboardCardStyle}">
                         <StackPanel>
                             <TextBlock Style="{StaticResource SubHeaderStyle}" Text="Security" />
                             <Separator Margin="0,10,0,15" Background="{StaticResource LightBorderBrush}" />
-
                             <Grid Margin="0,0,0,15">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -340,7 +311,6 @@
                                     </ComboBoxItem>
                                 </ComboBox>
                             </Grid>
-
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
@@ -382,7 +352,6 @@
                             </Grid>
                         </StackPanel>
                     </Border>
-
                     <Border Style="{StaticResource DashboardCardStyle}">
                         <StackPanel>
                             <TextBlock Style="{StaticResource SubHeaderStyle}" Text="Preferences" />
@@ -399,19 +368,16 @@
                             <CheckBox Content="Confirm before deleting records" IsChecked="{Binding ConfirmDeletions}" />
                         </StackPanel>
                     </Border>
-
                     <Border Style="{StaticResource DashboardCardStyle}">
                         <StackPanel>
                             <TextBlock Style="{StaticResource SubHeaderStyle}" Text="Data Management" />
                             <Separator Margin="0,10,0,15" Background="{StaticResource LightBorderBrush}" />
-
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
-
                                 <Button
                                     Grid.Column="0"
                                     Margin="0,0,5,0"
@@ -419,7 +385,6 @@
                                     Command="{Binding ExportCommand}"
                                     Content="Export Data"
                                     Style="{StaticResource ModernButtonStyle}" />
-
                                 <Button
                                     Grid.Column="1"
                                     Margin="5,0,5,0"
@@ -427,7 +392,6 @@
                                     Command="{Binding ImportCommand}"
                                     Content="Import Data"
                                     Style="{StaticResource ModernButtonStyle}" />
-
                                 <Button
                                     Grid.Column="2"
                                     Margin="5,0,0,0"
@@ -438,7 +402,6 @@
                             </Grid>
                         </StackPanel>
                     </Border>
-
                     <Button
                         Width="150"
                         Height="40"
@@ -448,7 +411,6 @@
                         Style="{StaticResource ModernButtonStyle}" />
                 </StackPanel>
             </ScrollViewer>
-
             <ScrollViewer
                 x:Name="GeneratorPanel"
                 Grid.Row="1"
@@ -456,12 +418,10 @@
                 Visibility="Collapsed">
                 <StackPanel>
                     <TextBlock Style="{StaticResource CardHeaderStyle}" Text="Password Generator" />
-
                     <Border Style="{StaticResource DashboardCardStyle}">
                         <StackPanel>
                             <TextBlock Style="{StaticResource SubHeaderStyle}" Text="Configuration" />
                             <Separator Margin="0,10,0,15" Background="{StaticResource LightBorderBrush}" />
-
                             <Grid Margin="0,0,0,20">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
@@ -489,7 +449,6 @@
                                     FontWeight="Bold"
                                     Text="{Binding GenLength}" />
                             </Grid>
-
                             <UniformGrid Columns="2" Rows="2">
                                 <CheckBox
                                     Margin="0,5"
@@ -508,7 +467,6 @@
                                     Content="Symbols (!@#)"
                                     IsChecked="{Binding GenUseSymbols}" />
                             </UniformGrid>
-
                             <Button
                                 Height="45"
                                 Margin="0,20,0,0"
@@ -517,18 +475,15 @@
                                 Style="{StaticResource ModernButtonStyle}" />
                         </StackPanel>
                     </Border>
-
                     <Border Style="{StaticResource DashboardCardStyle}">
                         <StackPanel>
                             <TextBlock Style="{StaticResource SubHeaderStyle}" Text="Result" />
                             <Separator Margin="0,10,0,15" Background="{StaticResource LightBorderBrush}" />
-
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-
                                 <Border
                                     Height="50"
                                     Background="#F5F7FA"
@@ -547,7 +502,6 @@
                                         Text="{Binding GeneratedPassword}"
                                         TextAlignment="Center" />
                                 </Border>
-
                                 <Button
                                     Grid.Column="1"
                                     Width="50"
@@ -567,7 +521,6 @@
                     </Border>
                 </StackPanel>
             </ScrollViewer>
-
             <DataGrid
                 x:Name="PasswordsGrid"
                 Grid.Row="1"
@@ -578,7 +531,6 @@
                 HorizontalScrollBarVisibility="Auto"
                 Style="{StaticResource VaultDataGridStyle}"
                 VerticalScrollBarVisibility="Auto">
-
                 <DataGrid.ColumnHeaderStyle>
                     <Style TargetType="DataGridColumnHeader">
                         <Setter Property="Padding" Value="10,5" />
@@ -587,17 +539,13 @@
                         <Setter Property="Background" Value="Transparent" />
                     </Style>
                 </DataGrid.ColumnHeaderStyle>
-
                 <DataGrid.GroupStyle>
                     <GroupStyle>
-
-                        <!--  🔥 КЛЮЧОВИЙ ФІКС  -->
                         <GroupStyle.Panel>
                             <ItemsPanelTemplate>
                                 <DataGridRowsPresenter />
                             </ItemsPanelTemplate>
                         </GroupStyle.Panel>
-
                         <GroupStyle.HeaderTemplate>
                             <DataTemplate>
                                 <StackPanel>
@@ -614,7 +562,6 @@
                                 </StackPanel>
                             </DataTemplate>
                         </GroupStyle.HeaderTemplate>
-
                         <GroupStyle.ContainerStyle>
                             <Style TargetType="{x:Type GroupItem}">
                                 <Setter Property="Margin" Value="0,0,0,10" />
@@ -634,8 +581,6 @@
                                                             Text="{Binding ItemCount, StringFormat=' ({0})'}" />
                                                     </StackPanel>
                                                 </Expander.Header>
-
-                                                <!--  🔥 ТУТ ВЖЕ ПРАЦЮЄ  -->
                                                 <ItemsPresenter />
                                             </Expander>
                                         </ControlTemplate>
@@ -643,11 +588,8 @@
                                 </Setter>
                             </Style>
                         </GroupStyle.ContainerStyle>
-
                     </GroupStyle>
                 </DataGrid.GroupStyle>
-
-
                 <DataGrid.Columns>
                     <DataGridTextColumn
                         Width="1.2*"
@@ -663,7 +605,6 @@
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
-
                     <DataGridTextColumn
                         Width="1.5*"
                         MinWidth="120"
@@ -677,7 +618,6 @@
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
-
                     <DataGridTemplateColumn Width="180" Header="Password">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -714,7 +654,6 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-
                     <DataGridTextColumn
                         Width="*"
                         MinWidth="100"
@@ -729,7 +668,6 @@
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
-
                     <DataGridTemplateColumn Width="130" Header="Actions">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -749,7 +687,6 @@
                                             Opacity="0.7"
                                             Source="/Resources/copy.png" />
                                     </Button>
-
                                     <Button
                                         Margin="0,0,5,0"
                                         Click="EditPassword_Click"
@@ -761,7 +698,6 @@
                                             Opacity="0.7"
                                             Source="/Resources/edit.png" />
                                     </Button>
-
                                     <Button
                                         Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                         CommandParameter="{Binding}"
@@ -777,7 +713,6 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-
                     <DataGridTemplateColumn Width="60" Header="Fav">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>

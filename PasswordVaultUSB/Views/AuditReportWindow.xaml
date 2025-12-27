@@ -10,7 +10,6 @@
     MouseLeftButtonDown="Window_MouseLeftButtonDown"
     WindowStartupLocation="CenterOwner"
     WindowStyle="None">
-
     <Border
         Background="White"
         BorderBrush="#E0E0E0"
@@ -22,7 +21,6 @@
                 Opacity="0.2"
                 ShadowDepth="5" />
         </Border.Effect>
-
         <Grid Margin="20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -30,7 +28,6 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-
             <TextBlock
                 HorizontalAlignment="Center"
                 FontSize="18"
@@ -45,7 +42,6 @@
                 Foreground="#999"
                 MouseLeftButtonUp="Close_Click"
                 Text="✕" />
-
             <Border
                 x:Name="GradeBorder"
                 Grid.Row="1"
@@ -63,9 +59,7 @@
                     Foreground="White"
                     Text="A" />
             </Border>
-
             <StackPanel Grid.Row="2" VerticalAlignment="Center">
-
                 <Grid Margin="0,5">
                     <TextBlock Foreground="#666" Text="Total Passwords" />
                     <TextBlock
@@ -75,7 +69,6 @@
                         Text="0" />
                 </Grid>
                 <Separator Background="#F0F0F0" />
-
                 <Grid Margin="0,10">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Margin="0,0,5,0" Text="⚠️" />
@@ -88,7 +81,6 @@
                         Foreground="#F44336"
                         Text="0" />
                 </Grid>
-
                 <Grid Margin="0,10">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Margin="0,0,5,0" Text="🔓" />
@@ -101,7 +93,6 @@
                         Foreground="#FF9800"
                         Text="0" />
                 </Grid>
-
                 <Grid Margin="0,10">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Margin="0,0,5,0" Text="📅" />
@@ -114,7 +105,6 @@
                         Foreground="#FFC107"
                         Text="0" />
                 </Grid>
-
                 <TextBlock
                     x:Name="RecText"
                     Margin="0,15,0,0"
@@ -125,7 +115,6 @@
                     TextAlignment="Center"
                     TextWrapping="Wrap" />
             </StackPanel>
-
             <Button
                 Grid.Row="3"
                 Height="40"

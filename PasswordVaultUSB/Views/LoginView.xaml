@@ -7,21 +7,19 @@
     Title="Authorization"
     Width="800"
     Height="600"
+    MinWidth="450"
+    MinHeight="525"
     Style="{StaticResource WindowStyle}"
     WindowStartupLocation="CenterScreen">
-
     <Window.DataContext>
         <vm:LoginViewModel />
     </Window.DataContext>
-
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </Window.Resources>
-
     <Window.InputBindings>
         <KeyBinding Key="Enter" Command="{Binding LoginCommand}" />
     </Window.InputBindings>
-
     <Grid>
         <Border
             Width="400"
@@ -37,7 +35,6 @@
                     ShadowDepth="5"
                     Color="{StaticResource ShadowColor}" />
             </Border.Effect>
-
             <StackPanel>
                 <StackPanel Margin="0,0,0,30">
                     <TextBlock
@@ -50,7 +47,6 @@
                         Style="{StaticResource DescriptionTextStyle}"
                         Text="Login in to the system" />
                 </StackPanel>
-
                 <StackPanel Margin="0,0,0,15">
                     <TextBlock Style="{StaticResource LabelStyle}" Text="Select USB Key" />
                     <Grid>
@@ -58,7 +54,6 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-
                         <Border Grid.Column="0" Style="{StaticResource InputBorderStyle}">
                             <ComboBox
                                 Height="38"
@@ -71,7 +66,6 @@
                                 ItemsSource="{Binding UsbDrives}"
                                 SelectedItem="{Binding SelectedUsbDrive}" />
                         </Border>
-
                         <Button
                             Grid.Column="1"
                             Width="40"
@@ -88,7 +82,6 @@
                         </Button>
                     </Grid>
                 </StackPanel>
-
                 <StackPanel Margin="0,0,0,15">
                     <TextBlock Style="{StaticResource LabelStyle}" Text="Username" />
                     <Border Style="{StaticResource InputBorderStyle}">
@@ -102,18 +95,14 @@
                         Text="{Binding UsernameError}"
                         Visibility="{Binding IsUsernameErrorVisible, Converter={StaticResource BoolToVis}}" />
                 </StackPanel>
-
                 <StackPanel Margin="0,0,0,25">
                     <TextBlock Style="{StaticResource LabelStyle}" Text="Password" />
-
                     <controls:BindablePasswordBox Height="40" Password="{Binding Password, UpdateSourceTrigger=PropertyChanged}" />
-
                     <TextBlock
                         Style="{StaticResource ErrorTextStyle}"
                         Text="{Binding PasswordError}"
                         Visibility="{Binding IsPasswordErrorVisible, Converter={StaticResource BoolToVis}}" />
                 </StackPanel>
-
                 <Button
                     Width="200"
                     Height="45"

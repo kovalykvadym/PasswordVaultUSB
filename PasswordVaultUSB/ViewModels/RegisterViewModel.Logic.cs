@@ -6,20 +6,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-
-namespace PasswordVaultUSB.ViewModels
-{
-    public partial class RegisterViewModel
-    {
-        private void RefreshDrives()
-        {
+namespace PasswordVaultUSB.ViewModels {
+    public partial class RegisterViewModel {
+        private void RefreshDrives() {
             UsbDrives.Clear();
             var drives = UsbDriveService.GetAvailableDrives();
-
             foreach (var drive in drives)
                 UsbDrives.Add(drive);
 
@@ -28,86 +22,52 @@ namespace PasswordVaultUSB.ViewModels
             else
                 SelectedUsbDrive = null;
         }
-
-        private async void ExecuteRegister(object parameter)
-        {
+        private async void ExecuteRegister(object parameter) {
             ResetErrors();
-
-            if (SelectedUsbDrive == null)
-            {
+            if (SelectedUsbDrive == null) {
                 MessageBox.Show("Please select a USB drive to store your vault!", "USB Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 RefreshDrives();
                 return;
             }
-
             if (!ValidateInput()) return;
 
             Mouse.OverrideCursor = Cursors.Wait;
-
-            try
-            {
+            try {
                 string usbPath = SelectedUsbDrive.RootDirectory;
-
-                // 1. Отримуємо ID флешки
                 string currentHardwareId = UsbDriveService.GetDriveSerialNumber(usbPath);
-
-                if (currentHardwareId == "UNKNOWN_ID")
-                {
+                if (currentHardwareId == "UNKNOWN_ID") {
                     var result = MessageBox.Show("Warning: Could not read USB Serial Number. Security binding will be weak. Continue?",
                         "Security Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
                     if (result == MessageBoxResult.No) return;
                 }
-
-                // 2. Готуємо шляхи
                 string vaultPath = UsbDriveService.CreateVaultFolder(usbPath);
                 string userFilePath = Path.Combine(vaultPath, $"{Username.Trim()}.dat");
-
-                if (File.Exists(userFilePath))
-                {
+                if (File.Exists(userFilePath)) {
                     UsernameError = "User already exists on this USB drive!";
                     IsUsernameErrorVisible = true;
                     return;
                 }
-
-                // 3. Створюємо файл
                 await CreateUserFileAsync(userFilePath, currentHardwareId);
-
-                // 4. Логінимось
                 AppState.CurrentUserFilePath = userFilePath;
                 AppState.CurrentMasterPassword = SecureStringHelper.ToSecureString(Password);
                 AppState.CurrentHardwareID = currentHardwareId;
-
                 MessageBox.Show($"User {Username} registered successfully!", "Success");
                 OpenMainView();
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 MessageBox.Show($"Critical error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                Mouse.OverrideCursor = null;
-            }
+            } finally { Mouse.OverrideCursor = null; }
         }
-
-        private async Task CreateUserFileAsync(string path, string hardwareId)
-        {
-            var initialData = new VaultData
-            {
+        private async Task CreateUserFileAsync(string path, string hardwareId) {
+            var initialData = new VaultData {
                 HardwareID = hardwareId,
                 Records = new List<PasswordRecord>(),
                 Settings = new UserSettings()
             };
-
-            byte[] encryptedContent = await Task.Run(() =>
-            {
+            byte[] encryptedContent = await Task.Run(() => {
                 string json = JsonConvert.SerializeObject(initialData);
                 return CryptoService.Encrypt(json, Password);
             });
-
-            using (FileStream sourceStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
-            {
+            using (FileStream sourceStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true)) {
                 await sourceStream.WriteAsync(encryptedContent, 0, encryptedContent.Length);
             }
         }

@@ -7,137 +7,84 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-
-namespace PasswordVaultUSB.Views
-{
-    public partial class MainView : Window
-    {
+namespace PasswordVaultUSB.Views {
+    public partial class MainView : Window {
         private readonly MainViewModel _viewModel;
         private List<Button> _menuButtons;
-
-        // Кольори для меню
         private readonly Brush _activeBackground = (Brush)new BrushConverter().ConvertFromString("#3E3E42");
         private readonly Brush _inactiveBackground = Brushes.Transparent;
         private readonly Brush _activeForeground = Brushes.White;
         private readonly Brush _inactiveForeground = (Brush)new BrushConverter().ConvertFromString("#A0A0A0");
-
-        public MainView()
-        {
+        public MainView() {
             InitializeComponent();
-
             _viewModel = new MainViewModel();
             this.DataContext = _viewModel;
-
-            // Логіка переходу до екрану входу при блокуванні
-            _viewModel.RequestLockView += () =>
-            {
+            _viewModel.RequestLockView += () => {
                 var loginView = new LoginView();
                 loginView.Show();
-
                 var windowsToClose = Application.Current.Windows
                                         .OfType<Window>()
                                         .Where(w => w != loginView)
                                         .ToList();
-
-                foreach (var window in windowsToClose)
-                {
+                foreach (var window in windowsToClose) {
                     window.Close();
                 }
             };
-
             PasswordsGrid.ItemsSource = _viewModel.Passwords;
             SetupMenuButtons();
         }
-
-        private void SetupMenuButtons()
-        {
+        private void SetupMenuButtons() {
             _menuButtons = new List<Button> { MyPasswordsButton, FavoritesButton, UsbButton, GeneratorButton, SettingsButton };
             SetActiveMenuButton(MyPasswordsButton);
         }
-
-        // --- UI Navigation Logic ---
-
-        private void MenuButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button clickedButton)
-            {
+        private void MenuButton_Click(object sender, RoutedEventArgs e) {
+            if (sender is Button clickedButton) {
                 SetActiveMenuButton(clickedButton);
-
                 _viewModel.IsFavoritesOnly = (clickedButton == FavoritesButton);
-
                 bool showUsbPanel = (clickedButton == UsbButton);
                 bool showSettingsPanel = (clickedButton == SettingsButton);
                 bool showGeneratorPanel = (clickedButton == GeneratorButton);
-
-                if (showSettingsPanel)
-                {
+                if (showSettingsPanel) {
                     _viewModel.LoadSettingsToProperties();
                 }
-
                 TogglePanels(showUsbPanel, showSettingsPanel, showGeneratorPanel);
             }
         }
-
-        private void TogglePanels(bool showUsb, bool showSettings, bool showGenerator)
-        {
+        private void TogglePanels(bool showUsb, bool showSettings, bool showGenerator) {
             ChangePasswordPanel.Visibility = showUsb ? Visibility.Visible : Visibility.Collapsed;
             SettingsPanel.Visibility = showSettings ? Visibility.Visible : Visibility.Collapsed;
-
-            if (GeneratorPanel != null)
-            {
+            if (GeneratorPanel != null) {
                 GeneratorPanel.Visibility = showGenerator ? Visibility.Visible : Visibility.Collapsed;
             }
-
             bool showMainContent = !showUsb && !showSettings && !showGenerator;
-
             PasswordsGrid.Visibility = showMainContent ? Visibility.Visible : Visibility.Collapsed;
-            if (HeaderGrid != null)
-            {
+            if (HeaderGrid != null) {
                 HeaderGrid.Visibility = showMainContent ? Visibility.Visible : Visibility.Collapsed;
             }
         }
-
-        private void SetActiveMenuButton(Button activeButton)
-        {
-            foreach (var btn in _menuButtons.Where(b => b != null))
-            {
+        private void SetActiveMenuButton(Button activeButton) {
+            foreach (var btn in _menuButtons.Where(b => b != null)) {
                 btn.Background = _inactiveBackground;
                 btn.Foreground = _inactiveForeground;
             }
-
-            if (activeButton != null)
-            {
+            if (activeButton != null) {
                 activeButton.Background = _activeBackground;
                 activeButton.Foreground = _activeForeground;
             }
         }
-
-        // --- Dialog Logic with MVVM Integration ---
-
-        private void AddPassword_Click(object sender, RoutedEventArgs e)
-        {
+        private void AddPassword_Click(object sender, RoutedEventArgs e) {
             LogAction("Opening 'Add Password' dialog");
-
-            // Створюємо ViewModel для діалогу додавання
             var addVm = new AddPasswordViewModel();
-            var addWindow = new AddPasswordView
-            {
+            var addWindow = new AddPasswordView {
                 Owner = this,
                 DataContext = addVm
             };
-
-            // Прив'язуємо закриття вікна до дії у ViewModel
-            addVm.CloseAction = (isSaved) =>
-            {
+            addVm.CloseAction = (isSaved) => {
                 addWindow.DialogResult = isSaved;
                 addWindow.Close();
             };
-
-            if (addWindow.ShowDialog() == true)
-            {
-                // Створюємо новий запис із даних VM
-                var newEntry = new PasswordRecord
-                {
+            if (addWindow.ShowDialog() == true) {
+                var newEntry = new PasswordRecord {
                     Service = addVm.Service,
                     Login = addVm.Login,
                     Password = addVm.Password,
@@ -145,41 +92,27 @@ namespace PasswordVaultUSB.Views
                     Notes = addVm.Notes,
                     Category = addVm.Category
                 };
-
                 _viewModel.AddNewRecord(newEntry);
-            }
-            else
-            {
+            } else {
                 LogAction("'Add Password' dialog cancelled");
             }
         }
 
-        private void EditPassword_Click(object sender, RoutedEventArgs e)
-        {
+        private void EditPassword_Click(object sender, RoutedEventArgs e) {
             var button = sender as Button;
-            if (button?.DataContext is PasswordRecord entry)
-            {
+            if (button?.DataContext is PasswordRecord entry) {
                 LogAction($"Opening edit dialog for '{entry.Service}'");
-
-                // Передаємо існуючий запис у конструктор ViewModel
                 var editVm = new AddPasswordViewModel(entry);
-                var editWindow = new AddPasswordView
-                {
+                var editWindow = new AddPasswordView {
                     Owner = this,
                     DataContext = editVm
                 };
-
-                editVm.CloseAction = (isSaved) =>
-                {
+                editVm.CloseAction = (isSaved) => {
                     editWindow.DialogResult = isSaved;
                     editWindow.Close();
                 };
-
-                if (editWindow.ShowDialog() == true)
-                {
-                    // Оновлюємо запис новими даними
-                    var updatedEntry = new PasswordRecord
-                    {
+                if (editWindow.ShowDialog() == true) {
+                    var updatedEntry = new PasswordRecord {
                         Service = editVm.Service,
                         Login = editVm.Login,
                         Password = editVm.Password,
@@ -190,39 +123,22 @@ namespace PasswordVaultUSB.Views
                         IsPasswordVisible = false,
                         CreatedDate = entry.CreatedDate
                     };
-
                     _viewModel.UpdateRecord(entry, updatedEntry);
-                }
-                else
-                {
+                } else {
                     LogAction($"Edit cancelled for '{entry.Service}'");
                 }
             }
         }
-
-        private void ToggleShowPassword_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button button && button.DataContext is PasswordRecord entry)
-            {
+        private void ToggleShowPassword_Click(object sender, RoutedEventArgs e) {
+            if (sender is Button button && button.DataContext is PasswordRecord entry) {
                 entry.IsPasswordVisible = !entry.IsPasswordVisible;
                 string visibility = entry.IsPasswordVisible ? "VISIBLE" : "HIDDEN";
                 LogAction($"Password visibility toggled to {visibility} for '{entry.Service}'");
             }
         }
-
-        // --- Helpers ---
-
-        private void LogAction(string message)
-        {
+        private void LogAction(string message) {
             _viewModel.LogAction(message);
         }
-
-        protected override void OnClosed(EventArgs e)
-        {
-            LogAction("Main window closing");
-            base.OnClosed(e);
-        }
-
         private void ResetAutoLockTimer(object sender, InputEventArgs e)
         {
             _viewModel.NotifyUserActivity();
